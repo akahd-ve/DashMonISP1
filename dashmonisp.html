@@ -1,0 +1,2665 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="dashboard">
+  <meta name="design-style" content="aurora">
+  <title>Monitoring Project ISP</title>
+  <!-- Google Fonts: Instrument Sans, Plus Jakarta Sans, Geist Mono -->
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Chart.js untuk visualisasi Kurva S, Donut, dan Bar Chart Regional -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@1.43.0/dist/umd/lucide.min.js"></script>
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS & PALET WARNA (AURORA DARK & LIGHT THEME)
+       ========================================================================== */
+    :root {
+      color-scheme: dark;
+      --background: #0c1214;
+      --surface-container-low: #111a1e;
+      --surface-container: #152024;
+      --surface-container-high: #1c2a30;
+      --on-surface: #edf3f5;
+      --on-surface-variant: #94a8b0;
+      --outline: #38515c;
+      --outline-variant: #213138;
+      --primary: #63c7d6;
+      --on-primary: #081214;
+      --primary-container: #163840;
+      --on-primary-container: #c7f0f7;
+      --secondary: #5d7882;
+      --tertiary: #87d69b;
+      --error: #f27474;
+      --on-error: #1a0606;
+      --positive: #87d69b;
+      --warning: #e8b954;
+      --focus: #63c7d6;
+      --data-1: #63c7d6;
+      --data-2: #87d69b;
+      --data-3: #e8b954;
+      --data-4: #f08c70;
+      --data-5: #7fa2f0;
+      --data-6: #c08cf0;
+      --data-7: #4fd1b5;
+      --data-8: #f27474;
+      --data-context: #415861;
+      --panel-gradient: linear-gradient(180deg, #162226 0%, #111a1e 100%);
+      --sage-tint: color-mix(in srgb, var(--tertiary) 13%, transparent);
+      --cyan-tint: color-mix(in srgb, var(--primary) 13%, transparent);
+      --amber-tint: color-mix(in srgb, var(--warning) 13%, transparent);
+      --red-tint: color-mix(in srgb, var(--error) 14%, transparent);
+      --font-headline: 'Instrument Sans', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-label: 'Geist Mono', monospace;
+      --rounded: 0.625rem;
+      --rounded-lg: 0.9rem;
+      --rounded-full: 9999px;
+      --hairline: 1px solid var(--outline-variant);
+      --hairline-strong: 1px solid var(--outline);
+      --heading-tracking: -0.025em;
+      --label-tracking: 0.06em;
+      --display-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.35rem);
+      --headline-size: clamp(1.15rem, 1rem + 0.45vw, 1.4rem);
+      --subhead-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --body-size: clamp(0.9375rem, 0.9rem + 0.15vw, 1rem);
+      --label-size: 0.75rem;
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2.5rem;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 120ms;
+      --dur-short: 240ms;
+      --dur-long: 420ms;
+    }
+
+    [data-theme="light"] {
+      color-scheme: light;
+      --background: #f3f7f8;
+      --surface-container-low: #ffffff;
+      --surface-container: #e8eff1;
+      --surface-container-high: #dce6e9;
+      --on-surface: #0f1c20;
+      --on-surface-variant: #485e66;
+      --outline: #7b949e;
+      --outline-variant: #cfdde2;
+      --primary: #0e6f80;
+      --on-primary: #ffffff;
+      --primary-container: #d3eef3;
+      --on-primary-container: #073842;
+      --secondary: #5d7882;
+      --tertiary: #1f7a4c;
+      --error: #c73838;
+      --on-error: #ffffff;
+      --positive: #1f7a4c;
+      --warning: #b57a10;
+      --focus: #0e6f80;
+      --data-1: #0e6f80;
+      --data-2: #1f7a4c;
+      --data-3: #c48414;
+      --data-4: #cf5e3c;
+      --data-5: #4f63c7;
+      --data-6: #8e4cb8;
+      --data-7: #248a7a;
+      --data-8: #c73838;
+      --data-context: #9ab0b8;
+      --panel-gradient: linear-gradient(180deg, #ffffff 0%, #f7fafb 100%);
+      --sage-tint: color-mix(in srgb, var(--tertiary) 12%, transparent);
+      --cyan-tint: color-mix(in srgb, var(--primary) 12%, transparent);
+      --amber-tint: color-mix(in srgb, var(--warning) 12%, transparent);
+      --red-tint: color-mix(in srgb, var(--error) 12%, transparent);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { overflow-x: clip; margin: 0; padding: 0; }
+    body {
+      background: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.5;
+      transition: background-color var(--dur-short) var(--ease-in-out), color var(--dur-short) var(--ease-in-out);
+    }
+    header { position: static !important; }
+    button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+    :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.65; }
+    }
+    .anim-in { animation: riseIn var(--dur-long) var(--ease-out) both; }
+    .delay-1 { animation-delay: 50ms; }
+    .delay-2 { animation-delay: 110ms; }
+    .delay-3 { animation-delay: 170ms; }
+
+    /* ==========================================================================
+       2. LAYOUT UTAMA & SIDEBAR NAVIGASI + CHECKLIST FILTER
+       ========================================================================== */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 295px minmax(0, 1fr);
+      min-height: 100vh;
+      width: 100%;
+    }
+    .app-shell * { min-width: 0; }
+
+    .sidebar {
+      background: var(--surface-container-low);
+      border-right: var(--hairline);
+      padding: var(--space-lg) var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    .sidebar-nav-block {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+      padding-bottom: var(--space-md);
+      border-bottom: var(--hairline);
+    }
+    .nav-heading {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: var(--label-tracking);
+      color: var(--on-surface-variant);
+      margin-bottom: var(--space-xs);
+    }
+    .module-nav-btn {
+      width: 100%;
+      min-height: 46px;
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--rounded);
+      border: var(--hairline);
+      background: var(--background);
+      color: var(--on-surface-variant);
+      font-family: var(--font-headline);
+      font-weight: 700;
+      font-size: 0.9375rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      transition: background-color var(--dur-micro) var(--ease-in-out), color var(--dur-micro) var(--ease-in-out), border-color var(--dur-micro) var(--ease-in-out);
+    }
+    .module-nav-btn:hover { color: var(--on-surface); border-color: var(--outline); }
+    .module-nav-btn.active {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+    .module-nav-left { display: flex; align-items: center; gap: var(--space-sm); }
+    .module-nav-pill {
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: var(--rounded-full);
+      background: color-mix(in srgb, currentColor 14%, transparent);
+    }
+
+    .filter-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+    }
+    .btn-reset {
+      background: transparent;
+      border: var(--hairline-strong);
+      border-radius: var(--rounded);
+      color: var(--on-surface-variant);
+      padding: var(--space-xs) var(--space-sm);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      cursor: pointer;
+      min-height: 36px;
+      transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+    }
+    .btn-reset:hover { background: var(--surface-container-high); color: var(--on-surface); }
+
+    .checklist-stack {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    .filter-details {
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      overflow: hidden;
+    }
+    .filter-summary {
+      list-style: none;
+      cursor: pointer;
+      padding: var(--space-sm) var(--space-md);
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-xs);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: var(--label-tracking);
+      color: var(--on-surface);
+      user-select: none;
+    }
+    .filter-summary::-webkit-details-marker { display: none; }
+    .filter-summary:hover { background: var(--surface-container); }
+    .filter-count-badge {
+      font-size: 0.68rem;
+      padding: 2px 7px;
+      border-radius: var(--rounded-full);
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+    }
+    .checklist-body {
+      padding: var(--space-xs) var(--space-sm) var(--space-sm);
+      border-top: var(--hairline);
+      max-height: 175px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .chk-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-xs);
+      padding: 5px 6px;
+      border-radius: calc(var(--rounded) - 2px);
+      cursor: pointer;
+      font-size: 0.8125rem;
+      color: var(--on-surface);
+      transition: background-color var(--dur-micro) var(--ease-out);
+    }
+    .chk-row:hover { background: var(--surface-container); }
+    .chk-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .chk-left input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .chk-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .chk-num {
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      color: var(--on-surface-variant);
+      flex-shrink: 0;
+    }
+
+    .sidebar-meta {
+      margin-top: auto;
+      padding-top: var(--space-md);
+      border-top: var(--hairline);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .active-filter-count { color: var(--primary); font-weight: 600; }
+
+    /* ==========================================================================
+       3. HEADER & ACTION BUTTONS (SYNC 1 SUMBER NOTEBOOK + AI ANALIS + EXPORT)
+       ========================================================================== */
+    .main-content {
+      padding: var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+      width: 100%;
+    }
+    .top-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding-bottom: var(--space-md);
+      border-bottom: var(--hairline);
+    }
+    .main-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--display-size);
+      font-weight: 700;
+      letter-spacing: var(--heading-tracking);
+      line-height: 1.08;
+      color: var(--on-surface);
+    }
+    .main-subtitle {
+      margin: 4px 0 0;
+      font-size: 0.9375rem;
+      color: var(--on-surface-variant);
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+    }
+    .theme-toggle, .btn-export, .mobile-filter-btn, .btn-sync, .btn-ai {
+      min-height: 44px;
+      background: var(--surface-container);
+      border: var(--hairline-strong);
+      border-radius: var(--rounded-full);
+      padding: var(--space-sm) var(--space-md);
+      color: var(--on-surface);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: background-color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+    }
+    .theme-toggle:hover, .btn-export:hover, .mobile-filter-btn:hover, .btn-sync:hover, .btn-ai:hover {
+      background: var(--surface-container-high);
+      border-color: var(--primary);
+    }
+    .btn-sync {
+      background: var(--sage-tint);
+      border-color: color-mix(in srgb, var(--tertiary) 45%, transparent);
+      color: var(--tertiary);
+      font-weight: 600;
+    }
+    .btn-ai {
+      background: var(--cyan-tint);
+      border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .sync-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--tertiary);
+      animation: pulseDot 2s infinite;
+      flex-shrink: 0;
+    }
+    .mobile-filter-btn { display: none; }
+
+    /* ==========================================================================
+       4. SCOREBOARD 6-CARD HORIZONTAL ROW
+       ========================================================================== */
+    .scoreboard-row-6 {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+    .score-card {
+      background: var(--panel-gradient);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--space-xs);
+      transition: transform var(--dur-short) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+    }
+    .score-card:hover { transform: translateY(-2px); border-color: var(--outline); }
+    .score-card.is-primary { border-top: 3px solid var(--primary); }
+    .score-card.is-positive { border-top: 3px solid var(--tertiary); }
+    .score-card.is-warning { border-top: 3px solid var(--warning); }
+    .score-card.is-danger { border-top: 3px solid var(--error); }
+    .score-card.is-info { border-top: 3px solid var(--data-5); }
+    .score-card.is-neutral { border-top: 3px solid var(--secondary); }
+
+    .score-label {
+      font-family: var(--font-label);
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: var(--label-tracking);
+      color: var(--on-surface-variant);
+      line-height: 1.3;
+    }
+    .score-value {
+      font-family: var(--font-headline);
+      font-size: clamp(1.45rem, 1.2rem + 0.8vw, 1.95rem);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: var(--heading-tracking);
+      line-height: 1.1;
+      color: var(--on-surface);
+    }
+    .score-card.is-primary .score-value { color: var(--primary); }
+    .score-card.is-positive .score-value { color: var(--tertiary); }
+    .score-card.is-warning .score-value { color: var(--warning); }
+    .score-card.is-danger .score-value { color: var(--error); }
+    .score-card.is-info .score-value { color: var(--data-5); }
+
+    .score-sub {
+      font-family: var(--font-label);
+      font-size: 0.7rem;
+      color: var(--on-surface-variant);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .pill-tag {
+      padding: 2px 7px;
+      border-radius: var(--rounded-full);
+      font-weight: 600;
+      font-size: 0.68rem;
+    }
+    .pill-cyan { background: var(--cyan-tint); color: var(--primary); }
+    .pill-sage { background: var(--sage-tint); color: var(--tertiary); }
+    .pill-amber { background: var(--amber-tint); color: var(--warning); }
+    .pill-red { background: var(--red-tint); color: var(--error); }
+
+    /* ==========================================================================
+       5. CHARTS & ANALYTICAL PANELS
+       ========================================================================== */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+    .panel {
+      background: var(--panel-gradient);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    .span-12 { grid-column: span 12; }
+    .span-7 { grid-column: span 7; }
+    .span-5 { grid-column: span 5; }
+    .span-4 { grid-column: span 4; }
+
+    .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-sm);
+    }
+    .panel-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--headline-size);
+      font-weight: 700;
+      letter-spacing: var(--heading-tracking);
+      color: var(--on-surface);
+    }
+    .panel-desc {
+      margin: 2px 0 0;
+      font-size: 0.8125rem;
+      color: var(--on-surface-variant);
+    }
+    .panel-badge {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded-full);
+      padding: 4px 10px;
+      white-space: nowrap;
+    }
+    .chart-box { position: relative; width: 100%; min-height: 295px; height: 295px; }
+    .chart-box-sm { position: relative; width: 100%; min-height: 220px; height: 220px; }
+
+    .donut-layout {
+      display: grid;
+      grid-template-columns: minmax(170px, 0.9fr) minmax(200px, 1.15fr);
+      gap: var(--space-md);
+      align-items: center;
+      min-height: 295px;
+    }
+    .donut-wrap {
+      position: relative;
+      min-height: 230px;
+      height: 230px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .donut-center { position: absolute; text-align: center; pointer-events: none; }
+    .donut-center-val {
+      font-family: var(--font-headline);
+      font-size: 1.65rem;
+      font-weight: 700;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      color: var(--on-surface);
+    }
+    .donut-center-lbl {
+      font-family: var(--font-label);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: var(--label-tracking);
+      color: var(--on-surface-variant);
+      margin-top: 4px;
+    }
+    .donut-legend { display: flex; flex-direction: column; gap: 5px; }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      padding: 5px 9px;
+      border-radius: var(--rounded);
+      background: var(--background);
+      border: var(--hairline);
+      cursor: pointer;
+      transition: border-color var(--dur-micro) var(--ease-out), background-color var(--dur-micro) var(--ease-out);
+    }
+    .legend-item:hover { border-color: var(--primary); background: var(--surface-container-high); }
+    .legend-left { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 500; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .legend-val {
+      font-family: var(--font-label);
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .region-subgrid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+    .region-subcard {
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    .region-subhead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-xs);
+    }
+    .region-code {
+      font-family: var(--font-headline);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--on-surface);
+    }
+    .region-submetrics {
+      font-family: var(--font-label);
+      font-size: 0.72rem;
+      color: var(--on-surface-variant);
+      display: flex;
+      gap: var(--space-sm);
+    }
+
+    .gap-list { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .gap-row {
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .gap-row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+    .gap-track {
+      height: 8px;
+      border-radius: var(--rounded-full);
+      background: var(--surface-container-high);
+      overflow: hidden;
+    }
+    .gap-fill {
+      height: 100%;
+      border-radius: var(--rounded-full);
+      background: var(--error);
+      transition: width 450ms var(--ease-out);
+    }
+
+    /* ==========================================================================
+       6. TABEL DATABASE LOP, SEARCH, QUICK CHIPS & ROW INSPECTOR
+       ========================================================================== */
+    .table-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-md);
+    }
+    .search-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+      flex: 1 1 280px;
+      max-width: 460px;
+    }
+    .filter-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: var(--label-tracking);
+      color: var(--on-surface-variant);
+    }
+    .input-field {
+      width: 100%;
+      min-height: 44px;
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: var(--space-sm) var(--space-md);
+      color: var(--on-surface);
+      font-size: 0.875rem;
+    }
+    .quick-chips { display: flex; flex-wrap: wrap; gap: var(--space-xs); align-items: center; }
+    .quick-chip {
+      min-height: 40px;
+      padding: 6px 12px;
+      border-radius: var(--rounded-full);
+      border: var(--hairline);
+      background: var(--background);
+      color: var(--on-surface-variant);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+    }
+    .quick-chip:hover { border-color: var(--outline); color: var(--on-surface); }
+    .quick-chip.active {
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      background: var(--background);
+    }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.82rem; }
+    thead th {
+      background: var(--surface-container-low);
+      font-family: var(--font-label);
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: var(--label-tracking);
+      color: var(--on-surface-variant);
+      padding: 11px 10px;
+      border-bottom: var(--hairline);
+      white-space: nowrap;
+      user-select: none;
+    }
+    th.sortable { cursor: pointer; }
+    th.sortable:hover { color: var(--primary); }
+    tbody td { padding: 9px 10px; border-bottom: var(--hairline); vertical-align: top; color: var(--on-surface); }
+    tbody tr { cursor: pointer; transition: background-color var(--dur-micro) var(--ease-out); }
+    tbody tr:hover { background: var(--surface-container); }
+    .td-mono { font-family: var(--font-label); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .td-lop { min-width: 210px; max-width: 290px; font-weight: 600; }
+    .td-remarks {
+      min-width: 200px;
+      max-width: 300px;
+      color: var(--on-surface-variant);
+      font-size: 0.78rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: var(--rounded-full);
+      font-family: var(--font-label);
+      font-size: 0.7rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .st-onair { background: var(--sage-tint); color: var(--tertiary); }
+    .st-power { background: var(--cyan-tint); color: var(--primary); }
+    .st-inst { background: var(--amber-tint); color: var(--warning); }
+    .st-drop { background: var(--red-tint); color: var(--error); }
+    .st-default { background: var(--surface-container-high); color: var(--on-surface-variant); }
+
+    .flag-ok { color: var(--tertiary); font-family: var(--font-label); font-weight: 700; }
+    .flag-miss { color: var(--error); font-family: var(--font-label); font-weight: 700; }
+
+    .table-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+    }
+    .pagination { display: flex; align-items: center; gap: var(--space-xs); }
+    .page-btn {
+      min-height: 40px;
+      min-width: 40px;
+      padding: 0 12px;
+      border-radius: var(--rounded);
+      border: var(--hairline);
+      background: var(--background);
+      color: var(--on-surface);
+      cursor: pointer;
+    }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .page-btn:not(:disabled):hover { background: var(--surface-container-high); }
+
+    .detail-box {
+      background: var(--background);
+      border: 1px solid var(--primary);
+      border-radius: var(--rounded);
+      padding: var(--space-md);
+      display: none;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    .detail-box.open { display: flex; }
+    .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: var(--space-sm); }
+    .detail-kv-lbl { font-family: var(--font-label); font-size: 0.68rem; text-transform: uppercase; color: var(--on-surface-variant); }
+    .detail-kv-val { font-size: 0.85rem; font-weight: 600; color: var(--on-surface); word-break: break-word; }
+
+    /* ==========================================================================
+       7. MODAL SINKRONISASI SUMBER NOTEBOOK, AI ANALIS & TOAST NOTIFICATION
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 10, 12, 0.72);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-md);
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-card {
+      background: var(--surface-container-low);
+      border: var(--hairline-strong);
+      border-radius: var(--rounded-lg);
+      width: 100%;
+      max-width: 680px;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      padding-bottom: var(--space-sm);
+      border-bottom: var(--hairline);
+    }
+    .modal-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .sync-schema-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--space-sm);
+    }
+    .sync-schema-box {
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .btn-primary-action {
+      min-height: 42px;
+      padding: 8px 16px;
+      border-radius: var(--rounded);
+      border: 1px solid var(--primary);
+      background: var(--primary);
+      color: var(--on-primary);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-primary-action:hover { opacity: 0.92; }
+
+    .ai-chat-box {
+      background: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: var(--space-md);
+      min-height: 190px;
+      max-height: 310px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    .ai-msg {
+      padding: 10px 12px;
+      border-radius: var(--rounded);
+      font-size: 0.85rem;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+    .ai-msg.user {
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      align-self: flex-end;
+      max-width: 85%;
+    }
+    .ai-msg.bot {
+      background: var(--surface-container);
+      color: var(--on-surface);
+      border: var(--hairline);
+      align-self: flex-start;
+      max-width: 95%;
+    }
+
+    .toast-banner {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+      background: var(--surface-container-high);
+      border: 1px solid var(--primary);
+      color: var(--on-surface);
+      padding: 10px 16px;
+      border-radius: var(--rounded);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast-banner.show { display: flex; }
+
+    .hidden-view { display: none !important; }
+    .empty-state { padding: var(--space-xl); text-align: center; color: var(--on-surface-variant); }
+
+    @media (max-width: 1320px) {
+      .scoreboard-row-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .region-subgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .span-4 { grid-column: span 6; }
+    }
+    @media (max-width: 1080px) {
+      .span-7, .span-5, .span-4 { grid-column: span 12; }
+      .region-subgrid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 860px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar { display: none; border-right: none; border-bottom: var(--hairline); }
+      .sidebar.mobile-open { display: flex; }
+      .mobile-filter-btn { display: inline-flex; }
+    }
+    @media (max-width: 640px) {
+      .main-content { padding: var(--space-md); }
+      .scoreboard-row-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .donut-layout { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <!-- ========================================================================
+       LEFT SIDEBAR: NAVIGASI MODUL & FILTER CHECKLIST TERPADU
+       ======================================================================== -->
+  <aside class="sidebar" id="sidebarPanel" aria-label="Navigasi Modul & Filter Data">
+    <div class="sidebar-nav-block">
+      <div class="nav-heading">Modul Dashboard</div>
+      <button type="button" id="nav-deployment" class="module-nav-btn active" onclick="switchModule('deployment')">
+        <span class="module-nav-left"><i data-lucide="activity" width="17" height="17"></i>Deployment ISP</span>
+        <span class="module-nav-pill" id="navCountDep">266</span>
+      </button>
+      <button type="button" id="nav-planning" class="module-nav-btn" onclick="switchModule('planning')">
+        <span class="module-nav-left"><i data-lucide="layers" width="17" height="17"></i>Planning ISP</span>
+        <span class="module-nav-pill" id="navCountPlan">860</span>
+      </button>
+    </div>
+
+    <div class="filter-header-row">
+      <span class="nav-heading" style="margin:0;">Filter Checklist</span>
+      <button type="button" class="btn-reset" onclick="resetAllFilters()">Reset Filter</button>
+    </div>
+
+    <div class="checklist-stack" id="checklistContainer"></div>
+
+    <div class="sidebar-meta">
+      <div class="active-filter-count" id="activeFilterLabel">0 filter aktif</div>
+      <div>Tanggal Cutoff: <strong>20 Nov 2026</strong></div>
+      <div>Eksklusi Aktif: TREG 1 &amp; TREG 2 dihapus</div>
+      <div>Sync Sumber: <strong>DATA BASE ISP (Notebook)</strong></div>
+    </div>
+  </aside>
+
+  <!-- ========================================================================
+       MAIN WORKSPACE
+       ======================================================================== -->
+  <main class="main-content">
+    <header class="top-header anim-in">
+      <div>
+        <h1 class="main-title">Monitoring Project ISP</h1>
+        <p class="main-subtitle" id="headerSubtitle">Dashboard Deployment &amp; Planning Infrastruktur OLT (SBU, SBT, SBS)</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="mobile-filter-btn" id="mobileFilterBtn" onclick="toggleMobileSidebar()" aria-expanded="false">
+          <i data-lucide="filter" width="16" height="16"></i>Filter &amp; Modul
+        </button>
+        <button type="button" class="btn-sync" onclick="openSyncModal()" title="Lihat & Sinkronisasi 1 Sumber Database ISP di Notebook">
+          <span class="sync-pulse"></span>
+          <span id="syncBtnText">Sync: DATA BASE ISP</span>
+        </button>
+        <button type="button" class="btn-ai" onclick="openAiModal()" title="Tanya AI Analis Data ISP">
+          <i data-lucide="sparkles" width="16" height="16"></i>AI Analis ISP
+        </button>
+        <button type="button" class="btn-export" onclick="exportCsvData()">
+          <i data-lucide="download" width="16" height="16"></i>Ekspor CSV
+        </button>
+        <button type="button" class="theme-toggle" id="themeToggleBtn" onclick="toggleTheme()" aria-label="Ganti Tema Gelap atau Terang">
+          <i data-lucide="sun" width="16" height="16" id="themeIcon"></i>
+          <span id="themeLabel">Mode Terang</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ======================================================================
+         MODULE 1: DEPLOYMENT ISP (SYNCED FROM DATA BASE ISP)
+         ====================================================================== -->
+    <section id="view-deployment" aria-label="Modul Deployment ISP">
+      <div class="scoreboard-row-6 anim-in delay-1" style="margin-bottom: var(--space-lg);">
+        <article class="score-card is-primary">
+          <div class="score-label">Jumlah Node</div>
+          <div class="score-value" id="dep-node">266</div>
+          <div class="score-sub"><span class="pill-tag pill-cyan" id="dep-unique-site">266 Node</span><span>Unique SITE ID</span></div>
+        </article>
+        <article class="score-card is-danger">
+          <div class="score-label">Total Site ID Over Duedate ISP</div>
+          <div class="score-value" id="dep-overdue">0</div>
+          <div class="score-sub"><span class="pill-tag pill-red" id="dep-overdue-pct">0%</span><span>Due &lt; 20 Nov 2026</span></div>
+        </article>
+        <article class="score-card is-info">
+          <div class="score-label">Total Port (Value)</div>
+          <div class="score-value" id="dep-port">0</div>
+          <div class="score-sub"><span class="pill-tag pill-cyan" id="dep-port-avg">Rata² 0/site</span><span>Kapasitas GPON</span></div>
+        </article>
+        <article class="score-card is-positive">
+          <div class="score-label">Closed / Go-Live / On Air</div>
+          <div class="score-value" id="dep-onair">0</div>
+          <div class="score-sub"><span class="pill-tag pill-sage" id="dep-onair-pct">0%</span><span>Status ON AIR</span></div>
+        </article>
+        <article class="score-card is-warning">
+          <div class="score-label">Open LOP</div>
+          <div class="score-value" id="dep-open">0</div>
+          <div class="score-sub"><span class="pill-tag pill-amber" id="dep-open-pct">0%</span><span>Aktif berjalan</span></div>
+        </article>
+        <article class="score-card is-neutral">
+          <div class="score-label">Drop Site</div>
+          <div class="score-value" id="dep-drop">0</div>
+          <div class="score-sub"><span class="pill-tag pill-red" id="dep-drop-pct">0%</span><span>Dibatalkan / Relok</span></div>
+        </article>
+      </div>
+
+      <div class="charts-grid anim-in delay-2" style="margin-bottom: var(--space-lg);">
+        <section class="panel span-7">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Kurva S — Start Project vs Due Date</h2>
+              <p class="panel-desc">Akumulasi rencana Start Project terhadap target Due Date serta capaian On-Time vs Overtime (per 20 Nov 2026)</p>
+            </div>
+            <span class="panel-badge" id="scurveBadge">Akumulasi Node</span>
+          </div>
+          <div class="chart-box"><canvas id="chartSCurve"></canvas></div>
+        </section>
+
+        <section class="panel span-5">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Progress ISP (Donut)</h2>
+              <p class="panel-desc">Distribusi tahapan dengan jumlah numerik eksplisit per kategori progress</p>
+            </div>
+            <span class="panel-badge">Klik item untuk filter</span>
+          </div>
+          <div class="donut-layout">
+            <div class="donut-wrap">
+              <canvas id="chartDepDonut"></canvas>
+              <div class="donut-center">
+                <div class="donut-center-val" id="depDonutTotal">266</div>
+                <div class="donut-center-lbl">Total Node</div>
+              </div>
+            </div>
+            <div class="donut-legend" id="depDonutLegend"></div>
+          </div>
+        </section>
+
+        <section class="panel span-12">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Breakdown Status per Region (Sub-Grafik SBU, SBT, SBS)</h2>
+              <p class="panel-desc">Distribusi Progress ISP terpisah per region valid (TREG 1 &amp; TREG 2 dikecualikan)</p>
+            </div>
+            <span class="panel-badge">3 Region Aktif</span>
+          </div>
+          <div class="region-subgrid" id="regionSubgrid"></div>
+        </section>
+      </div>
+
+      <section class="panel anim-in delay-3">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Database LOP — Lokasi &amp; Status Deployment OSP</h2>
+            <p class="panel-desc">Klik baris untuk melihat detail lengkap LOP dan catatan lapangan (remarks)</p>
+          </div>
+          <span class="panel-badge" id="depTableBadge">266 baris</span>
+        </div>
+
+        <div class="table-toolbar">
+          <div class="search-group">
+            <label class="filter-label" for="depSearchInput">Pencarian Cepat (IHLD, LOP Name, Site ID, STO, Remarks)</label>
+            <input type="search" id="depSearchInput" class="input-field" placeholder="Ketik kata kunci pencarian (misal: MUHAJIRIN, AGR042, SBU)..." oninput="onSearchChange('dep')">
+          </div>
+          <div class="quick-chips" role="group" aria-label="Filter Cepat Deployment">
+            <button type="button" class="quick-chip active" data-q="ALL" onclick="setQuickChip('dep','ALL',this)">Semua</button>
+            <button type="button" class="quick-chip" data-q="OVERDUE" onclick="setQuickChip('dep','OVERDUE',this)">Over Duedate</button>
+            <button type="button" class="quick-chip" data-q="ON AIR" onclick="setQuickChip('dep','ON AIR',this)">On Air</button>
+            <button type="button" class="quick-chip" data-q="POWER ON" onclick="setQuickChip('dep','POWER ON',this)">Power On</button>
+            <button type="button" class="quick-chip" data-q="AANWIJZING" onclick="setQuickChip('dep','AANWIJZING',this)">Aanwijzing</button>
+            <button type="button" class="quick-chip" data-q="DROP SITE" onclick="setQuickChip('dep','DROP SITE',this)">Drop Site</button>
+          </div>
+        </div>
+
+        <div class="detail-box" id="depDetailBox" aria-live="polite">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong id="depDetailTitle" style="font-family:var(--font-headline);font-size:1rem;">Detail LOP</strong>
+            <button type="button" class="btn-reset" onclick="closeDetail('dep')">Tutup</button>
+          </div>
+          <div class="detail-grid" id="depDetailGrid"></div>
+          <div>
+            <div class="detail-kv-lbl">Remarks / Catatan Lapangan</div>
+            <div id="depDetailRemarks" style="font-size:0.85rem;margin-top:4px;"></div>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th class="sortable" onclick="sortTable('dep','no')">No ↕</th>
+                <th class="sortable" onclick="sortTable('dep','reg')">Region ↕</th>
+                <th class="sortable" onclick="sortTable('dep','jen')">Jenis Project ↕</th>
+                <th class="sortable" onclick="sortTable('dep','prog')">Progress ISP ↕</th>
+                <th class="sortable" onclick="sortTable('dep','ihld')">IHLD ↕</th>
+                <th class="sortable" onclick="sortTable('dep','lop')">LOP Name ↕</th>
+                <th class="sortable" onclick="sortTable('dep','port')">Port ↕</th>
+                <th class="sortable" onclick="sortTable('dep','sto')">STO ↕</th>
+                <th class="sortable" onclick="sortTable('dep','site')">Site ID ↕</th>
+                <th class="sortable" onclick="sortTable('dep','osp')">Status OSP ↕</th>
+                <th class="sortable" onclick="sortTable('dep','prio')">Prioritas ↕</th>
+                <th class="sortable" onclick="sortTable('dep','type')">Type Req ↕</th>
+                <th class="sortable" onclick="sortTable('dep','merk')">Merk OLT ↕</th>
+                <th class="sortable" onclick="sortTable('dep','start')">Start ↕</th>
+                <th class="sortable" onclick="sortTable('dep','due')">Due Date ↕</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody id="depTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <div id="depPageInfo">Menampilkan 0–0 dari 0</div>
+          <div class="pagination">
+            <button type="button" class="page-btn" id="depPrev" onclick="changePage('dep',-1)">Sebelumnya</button>
+            <span id="depPageLbl" style="padding:0 8px;">Hal 1</span>
+            <button type="button" class="page-btn" id="depNext" onclick="changePage('dep',1)">Berikutnya</button>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ======================================================================
+         MODULE 2: PLANNING ISP (SYNCED FROM SAME 1 SOURCE DATA BASE ISP)
+         ====================================================================== -->
+    <section id="view-planning" class="hidden-view" aria-label="Modul Planning ISP">
+      <div class="scoreboard-row-6 anim-in delay-1" style="margin-bottom: var(--space-lg);">
+        <article class="score-card is-primary">
+          <div class="score-label">Total LOP Planning</div>
+          <div class="score-value" id="plan-total">860</div>
+          <div class="score-sub"><span class="pill-tag pill-cyan">JENIS PROJECT</span><span>Target Regional</span></div>
+        </article>
+        <article class="score-card is-info">
+          <div class="score-label">Total Port Plan</div>
+          <div class="score-value" id="plan-port">0</div>
+          <div class="score-sub"><span class="pill-tag pill-cyan" id="plan-port-filled">0 terisi</span><span>Estimasi Port</span></div>
+        </article>
+        <article class="score-card is-positive">
+          <div class="score-label">Total Lengkap (Ready Go Deploy)</div>
+          <div class="score-value" id="plan-ready">0</div>
+          <div class="score-sub"><span class="pill-tag pill-sage">5 Parameter Lengkap</span><span>Siap deploy</span></div>
+        </article>
+        <article class="score-card is-warning">
+          <div class="score-label">Total Belum Lengkap (Data Incomplete)</div>
+          <div class="score-value" id="plan-incomplete">0</div>
+          <div class="score-sub"><span class="pill-tag pill-amber">Butuh Kelengkapan</span><span>Gap parameter</span></div>
+        </article>
+        <article class="score-card is-primary">
+          <div class="score-label">% Kesiapan Data</div>
+          <div class="score-value" id="plan-readiness-pct">0%</div>
+          <div class="score-sub"><span class="pill-tag pill-sage">Skor Kelayakan</span><span>Ready / Total</span></div>
+        </article>
+        <article class="score-card is-danger">
+          <div class="score-label">Proposed Drop / Hold</div>
+          <div class="score-value" id="plan-hold">0</div>
+          <div class="score-sub"><span class="pill-tag pill-red" id="plan-hold-pct">0%</span><span>Drop / Pending</span></div>
+        </article>
+      </div>
+
+      <div class="charts-grid anim-in delay-2" style="margin-bottom: var(--space-lg);">
+        <section class="panel span-4">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Status Kelayakan Planning</h2>
+              <p class="panel-desc">Lengkap Go Deploy vs Belum Lengkap (skala 860 LOP berdasarkan komposisi Jenis Project)</p>
+            </div>
+          </div>
+          <div class="donut-wrap" style="min-height:200px;height:200px;">
+            <canvas id="chartPlanDonut"></canvas>
+            <div class="donut-center">
+              <div class="donut-center-val" id="planDonutVal">0%</div>
+              <div class="donut-center-lbl">Siap Deploy</div>
+            </div>
+          </div>
+          <div class="donut-legend" id="planDonutLegend"></div>
+        </section>
+
+        <section class="panel span-4">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Parameter Gap Go-Deploy</h2>
+              <p class="panel-desc">Jumlah data kosong/hilang pada 5 parameter wajib (audit baris DATA BASE ISP)</p>
+            </div>
+          </div>
+          <div class="gap-list" id="planGapList"></div>
+        </section>
+
+        <section class="panel span-4">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Kesiapan Data per Region</h2>
+              <p class="panel-desc">Perbandingan Ready Go Deploy vs Incomplete di SBU, SBT, SBS (tanpa TREG 1 &amp; 2)</p>
+            </div>
+          </div>
+          <div class="chart-box" style="min-height:255px;height:255px;">
+            <canvas id="chartPlanRegion"></canvas>
+          </div>
+        </section>
+      </div>
+
+      <section class="panel anim-in delay-3">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Database LOP — Lokasi &amp; Status Deployment OSP</h2>
+            <p class="panel-desc">Audit kelengkapan 5 parameter wajib Go-Deploy: IHLD, Nama LOP, Port, SITE ID, dan Status OSP</p>
+          </div>
+          <span class="panel-badge" id="planTableBadge">266 baris teraudit</span>
+        </div>
+
+        <div class="table-toolbar">
+          <div class="search-group">
+            <label class="filter-label" for="planSearchInput">Pencarian Cepat Parameter Planning</label>
+            <input type="search" id="planSearchInput" class="input-field" placeholder="Cari IHLD, LOP Name, Site ID, Status OSP..." oninput="onSearchChange('plan')">
+          </div>
+          <div class="quick-chips" role="group" aria-label="Filter Kelayakan Planning">
+            <button type="button" class="quick-chip active" data-q="ALL" onclick="setQuickChip('plan','ALL',this)">Semua</button>
+            <button type="button" class="quick-chip" data-q="READY" onclick="setQuickChip('plan','READY',this)">Lengkap (Ready Go Deploy)</button>
+            <button type="button" class="quick-chip" data-q="INCOMPLETE" onclick="setQuickChip('plan','INCOMPLETE',this)">Belum Lengkap</button>
+            <button type="button" class="quick-chip" data-q="HOLD" onclick="setQuickChip('plan','HOLD',this)">Proposed Drop / Hold</button>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th class="sortable" onclick="sortTable('plan','no')">No ↕</th>
+                <th class="sortable" onclick="sortTable('plan','reg')">Region ↕</th>
+                <th class="sortable" onclick="sortTable('plan','jen')">Jenis Project ↕</th>
+                <th class="sortable" onclick="sortTable('plan','ihld')">IHLD ↕</th>
+                <th class="sortable" onclick="sortTable('plan','lop')">Nama LOP ↕</th>
+                <th class="sortable" onclick="sortTable('plan','port')">Port ↕</th>
+                <th class="sortable" onclick="sortTable('plan','site')">SITE ID ↕</th>
+                <th class="sortable" onclick="sortTable('plan','osp')">Status OSP ↕</th>
+                <th class="sortable" onclick="sortTable('plan','prio')">Prioritas ↕</th>
+                <th>Flag Kelengkapan (5 Param)</th>
+                <th class="sortable" onclick="sortTable('plan','ready')">Kelayakan ↕</th>
+              </tr>
+            </thead>
+            <tbody id="planTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <div id="planPageInfo">Menampilkan 0–0 dari 0</div>
+          <div class="pagination">
+            <button type="button" class="page-btn" id="planPrev" onclick="changePage('plan',-1)">Sebelumnya</button>
+            <span id="planPageLbl" style="padding:0 8px;">Hal 1</span>
+            <button type="button" class="page-btn" id="planNext" onclick="changePage('plan',1)">Berikutnya</button>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<!-- ==========================================================================
+     MODAL 1: SINKRONISASI 1 SUMBER DATABASE ISP (NOTEBOOK UNIFIED SYNC)
+     ========================================================================== -->
+<div class="modal-backdrop" id="syncModal" role="dialog" aria-modal="true" aria-labelledby="syncModalTitle">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title" id="syncModalTitle">Sinkronisasi 1 Sumber Database ISP (Notebook)</h3>
+        <div style="font-size:0.8rem;color:var(--on-surface-variant);margin-top:2px;">
+          Terhubung ke sumber tunggal <strong>DATA BASE ISP</strong> untuk modul Deployment &amp; Planning
+        </div>
+      </div>
+      <button type="button" class="btn-reset" onclick="closeSyncModal()">Tutup</button>
+    </div>
+
+    <div class="sync-schema-grid">
+      <div class="sync-schema-box">
+        <div class="detail-kv-lbl">Sumber Master Notebook</div>
+        <div class="detail-kv-val" style="color:var(--tertiary);">DATA BASE ISP (Unified)</div>
+        <div style="font-size:0.78rem;color:var(--on-surface-variant);">266 Baris Master Node (SBU, SBT, SBS) &amp; 860 Target LOP Planning terintegrasi.</div>
+      </div>
+      <div class="sync-schema-box">
+        <div class="detail-kv-lbl">Aturan Filter &amp; Cutoff</div>
+        <div class="detail-kv-val">Cutoff: 20 Nov 2026</div>
+        <div style="font-size:0.78rem;color:var(--on-surface-variant);">Eksklusi otomatis TREG 1 &amp; TREG 2; audit 5 parameter wajib Go-Deploy aktif.</div>
+      </div>
+      <div class="sync-schema-box">
+        <div class="detail-kv-lbl">Status Sinkronisasi</div>
+        <div class="detail-kv-val" id="lastSyncTimestamp">Tersinkronisasi Aktif</div>
+        <div style="font-size:0.78rem;color:var(--on-surface-variant);">Filter &amp; indikator Deployment + Planning berbagi state 1 sumber.</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:var(--space-sm);justify-content:flex-end;">
+      <button type="button" class="btn-primary-action" onclick="triggerNotebookResync()">
+        <i data-lucide="refresh-cw" width="15" height="15"></i>Re-Sync &amp; Validasi Ulang dari Notebook
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     MODAL 2: AI ANALIS DATA ISP (TERINTEGRASI DENGAN DATA BASE ISP)
+     ========================================================================== -->
+<div class="modal-backdrop" id="aiModal" role="dialog" aria-modal="true" aria-labelledby="aiModalTitle">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title" id="aiModalTitle">AI Analis Data ISP</h3>
+        <div style="font-size:0.8rem;color:var(--on-surface-variant);margin-top:2px;">
+          Analisis langsung berdasarkan data terfilter dari <strong>DATA BASE ISP</strong>
+        </div>
+      </div>
+      <button type="button" class="btn-reset" onclick="closeAiModal()">Tutup</button>
+    </div>
+
+    <div class="quick-chips">
+      <button type="button" class="quick-chip" onclick="askPresetAi('Cek status MUHAJIRIN')">Cek status MUHAJIRIN</button>
+      <button type="button" class="quick-chip" onclick="askPresetAi('Ringkasan site Over Duedate per region')">Ringkasan Over Duedate</button>
+      <button type="button" class="quick-chip" onclick="askPresetAi('Analisa gap 5 parameter Planning Go-Deploy')">Analisa Gap Planning</button>
+      <button type="button" class="quick-chip" onclick="askPresetAi('Perbandingan performa SBU, SBT, dan SBS')">Perbandingan Region</button>
+    </div>
+
+    <div class="ai-chat-box" id="aiChatHistory">
+      <div class="ai-msg bot">Halo! Saya AI Analis Data ISP yang tersinkronisasi dengan <strong>DATA BASE ISP</strong> (266 node aktif &amp; 860 LOP planning). Silakan tanyakan status LOP tertentu (misal: <em>"cek status muhajirin"</em>), ringkasan overdue, atau kesiapan parameter Go-Deploy.</div>
+    </div>
+
+    <form style="display:flex;gap:var(--space-sm);" onsubmit="handleAiSubmit(event)">
+      <input type="text" id="aiPromptInput" class="input-field" placeholder="Ketik pertanyaan analisis data ISP..." required>
+      <button type="submit" class="btn-primary-action" id="aiSendBtn">Analisa</button>
+    </form>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast-banner" id="toastBanner" role="status" aria-live="polite">
+  <i data-lucide="check-circle-2" width="16" height="16" style="color:var(--tertiary);"></i>
+  <span id="toastText">Sinkronisasi berhasil</span>
+</div>
+
+<script>
+/* ============================================================================
+   1. KONSTANTA & DATASET TERPADU (SYNC 1 SUMBER: DATA BASE ISP DI NOTEBOOK)
+   ============================================================================ */
+const CUTOFF_DATE = new Date(2026, 10, 20); // 20 Nov 2026
+const EXCLUDED_REGIONS = new Set(['TREG 1', 'TREG 2']);
+const PLANNING_TARGET_TOTAL = 860;
+
+const JENIS_MAP = [
+  '1. JPP Microdemand (TIF)',
+  '3. HEM (TIF)',
+  '4. FTTH MTEL',
+  '6. Outdoorisasi',
+  '8. OLO (TIF)',
+  '9. JPP FTTH Fiberhome',
+  '10. JPP FTTH Non-TA',
+  '#N/A'
+];
+const PROG_MAP = [
+  'POWER ON',
+  'ON AIR',
+  'MATERIAL ONSITE',
+  'DONE SURVEY',
+  'DROP SITE',
+  'AANWIJZING',
+  'INSTALASI',
+  'DELIVERY'
+];
+const TYPE_MAP = ['FRAME MOLT', 'FULL CABINET MOLT', 'FULL BOLT', 'MODULE OLT'];
+const MERK_MAP = [
+  'ZTE C620', 'ZTE C600', 'HW MA5800-X2', 'HW MA5800-X17',
+  'FH AN5516-04', 'FH AN5516-05', 'FH AN5516-06', 'FH AN5516-07',
+  'ZTE HFTH', 'HW FLHF'
+];
+
+// Master Data 1 Sumber (DATA BASE ISP): [no, reg, jenIdx, progIdx, ihld, lop, port, sto, site, osp, prio, rem, typeIdx, merkIdx, start, due]
+const COMPACT_ROWS = [
+[1,'SBS',1,0,`13056136`,`LPG PT4 1002317109 QQ RUMDIN PIC MESUJI & SUPP BAGIAN`,0,`UNT`,`MGA024`,``,`#N/A`,`New Order 31 Agustus 2026, masih progress tarik kabel uplink, terkendala izin kades/camat, solusi cascade & surat inventarisir`,0,0,`31/08/2026`,`24/11/2026`],
+[2,'SBS',5,0,`11320701`,`BNK-PT4-MNA-JPPTSEL-MARAS BANTAN`,536,`MNA`,`TIS011`,``,`#N/A`,`New Order 18 Mar 2026, issue commcase dengan KADES, Tsel on FU penentuan lanjut atau relokasi`,1,0,`18/03/2026`,`13/04/2026`],
+[3,'SBT',7,0,`RECOV-17`,`RELOKASI GPON00-D1-SOK-3TMK`,0,`SOK`,`PKR506`,`#N/A`,`#N/A`,`New Order 11 Sept 2026, update 10 Nov Uplink dan Logic belum ready`,0,0,`11/09/2026`,`27/11/2026`],
+[4,'SBS',0,0,`12210911`,`BNK JPP PT4 AGR ULAK TANDING`,496,`AGR`,`AGR042`,`4. Finish Instal`,`Prio Oktober 20 Branch`,`New Order 13 Oct 2026`,0,0,`13/10/2026`,`20/11/2026`],
+[5,'SBT',5,0,`12155636`,`RDR JPP PT4 TANAH TINGGI`,336,`MIS`,`PPN612-2`,``,`#N/A`,`New Order 22 Oct 2026, cascade Mini OLT Existing, belum dapat logic`,0,0,`22/10/2026`,`19/11/2026`],
+[6,'SBS',0,0,`11422911`,`JBI-PT4+MINOL-PKB-FJ-SIMPANG KIRI`,304,`PKB`,`MSK012`,`5. GoLive`,`NON PRIORITY`,`New Order 22 Oct 2026, logic sudah ada akan di share 10 Nov 2026`,0,0,`22/10/2026`,`20/11/2026`],
+[7,'SBS',0,0,`11412024`,`BNK-PT4-BNC-JPPTSEL- PEKIK NYARING 2`,432,`BNC`,`AGR076`,`5. GoLive`,`NON PRIORITY`,`New Order TIF 1 Mar 2026, kapal sandar deliver ke site estimasi 13 March`,1,0,`01/03/2026`,`13/04/2026`],
+[8,'SBU',0,1,`11116308`,`SMU-ODC-PMS-FAZ D07 R BINTANG CEMERLANG`,296,`PMS`,`PMR043`,`5. GoLive`,`NON PRIORITY`,`New Order 1 April 2026`,1,0,`01/04/2026`,`18/04/2026`],
+[9,'SBS',0,1,`11483456`,`BBL PT4 P4I4 RIAU Silip - Memarong CSF`,480,`SLT`,`SLT131`,`5. GoLive`,`NON PRIORITY`,`New Order 7 April 2026, install di pondasi existing`,1,0,`07/04/2026`,`29/04/2026`],
+[10,'SBT',0,1,`11297609`,`RDR BGU PT3 P1I1 Jl.LintasSumatraBalam`,432,`BGU`,`UJT515`,`5. GoLive`,`NON PRIORITY`,`New Order TIF 26 Feb 2026, delivery start 8 April 2026`,1,0,`26/02/2026`,`29/04/2026`],
+[11,'SBT',0,1,`11379520`,`RDR JPP PT4 DALU DALU PEKAN TEBI`,184,`PPN`,`PPN224`,`5. GoLive`,`NON PRIORITY`,`New Order TIF 5 Feb 2026`,0,0,`05/02/2026`,`17/02/2026`],
+[12,'SBS',0,1,`12205518`,`BBL PT4 P3I4 PRA PENGARAM CSF`,80,`TBI`,`TBI048`,`5. GoLive`,`NON PRIORITY`,`New Order TIF 5 Feb 2026, SFP Bidi MOS 26 April 2026`,1,0,`05/02/2026`,`27/04/2026`],
+[13,'SBS',0,1,`11386117`,`BBL PT4 P2I2 KAMPIT GABUNGAN CSF`,304,`MGR`,`MGR032`,`5. GoLive`,`NON PRIORITY`,`New Order 7 April 2026, Plan Relok ke SME048`,1,0,`07/04/2026`,`30/04/2026`],
+[14,'SBS',0,1,`11447211`,`BNK-PT4-AGR-JPPTSEL-PADANGJAYA`,152,`AGR`,`AGR100`,`5. GoLive`,`NON PRIORITY`,`New Order 7 April 2026, sudah pre config 30 April 2026`,1,0,`07/04/2026`,`06/05/2026`],
+[15,'SBS',0,1,`11216204`,`BNK-PT4-AGR-JPPTSEL-KURO TIDUR`,152,`AGR`,`AGR080`,`5. GoLive`,`NON PRIORITY`,`New Order 17 April 2026, need 2 Pcs SFP Combo C+`,1,0,`17/04/2026`,`04/05/2026`],
+[16,'SBS',0,1,`11316646`,`BNK-PT4-TIS-JPPTSEL-KOTA AGUNG`,352,`TIS`,`TIS036`,`5. GoLive`,`NON PRIORITY`,`New Order 4 May 2026, mos 15 May 2026`,1,0,`04/05/2026`,`21/05/2026`],
+[17,'SBS',2,1,`11078975`,`BNK-PT4-P7I7-JPPTESL-MKO009-LUBUK GEDANG`,0,`MKO`,`MKO015`,``,`#N/A`,`New Order 22 April 2026, waiting uplink readyness`,1,0,`22/04/2026`,`05/06/2026`],
+[18,'SBS',0,1,`12439452`,`BBL PT4 P4I4 DESA RADJIK - SEBAGIN CSF`,968,`TBI`,`TBI016`,`5. GoLive`,`NON PRIORITY`,`New Order 10 June 2026`,1,0,`10/06/2026`,`29/06/2026`],
+[19,'SBS',0,1,`11529089`,`SMS P3I1 PT4 PBM XX DESA PANGKUL`,152,`PBM`,`PBM025`,`5. GoLive`,`NON PRIORITY`,`New Order 5 May 2026`,1,0,`05/05/2026`,`30/06/2026`],
+[20,'SBT',0,1,`12331062`,`RDR JPP PT4 SUNGAI PIRING`,176,`TBH`,`TBH034`,`5. GoLive`,`NON PRIORITY`,`New Order 21 June 2026`,1,0,`21/06/2026`,`11/07/2026`],
+[21,'SBT',0,1,`11288367`,`RDR JPP PT4 PASAR MUARA RUMBAI`,304,`PPN`,`PPN636`,`5. GoLive`,`NON PRIORITY`,`New Order 10 June 2026, Sitac 23 June, Pondasi 27 June, PLN done 3 July`,1,0,`10/06/2026`,`15/07/2026`],
+[22,'SBT',0,1,`11288505`,`RDR JPP PT4 JL HARAPAN JAYA BAGAN BATU`,144,`BGU`,`UJT666`,`5. GoLive`,`NON PRIORITY`,`New Order 25 June 2026`,1,0,`25/06/2026`,`17/08/2026`],
+[23,'SBT',0,1,`11358638`,`SMB P2I2 MD sumatera barat_599`,184,`UGD`,`SME048`,`5. GoLive`,`NON PRIORITY`,`New Order 21 Agustus 2026`,1,0,`21/08/2026`,`06/09/2026`],
+[24,'SBT',0,1,`11525669`,`RDR JPP PT4 RIAU_564`,416,`MIS`,`PPN612`,`5. GoLive`,`NON PRIORITY`,`New Order 27 Agustus 2026, Core belum ready butuh perbaikan`,1,0,`27/08/2026`,`03/10/2026`],
+[25,'SBS',0,1,`11782844`,`LPG PT3 JPP BANJARAN PADANG CERMIN TJK`,368,`TJK`,`KLA036`,`5. GoLive`,`NON PRIORITY`,`New Order 15 Sept 2026, done osp, menunggu team TA untuk uplink`,1,0,`15/09/2026`,`11/10/2026`],
+[26,'SBS',0,1,`12125034`,`LPG PT4 JPP DESA GEBANG CSF TKB`,480,`TKB`,`MINI OLT HANURA`,`5. GoLive`,`NON PRIORITY`,`New Order 15 Sept 2026, done osp`,1,0,`15/09/2026`,`11/10/2026`],
+[27,'SBS',0,1,`11472404`,`SMS P3I1 PT4 PDP FXX TALANG PADANG 2`,400,`PDP`,`LHT019`,`5. GoLive`,`NON PRIORITY`,`New Order TIF 5 Feb 2026, Skenario full kabinet`,0,0,`05/02/2026`,`18/02/2026`],
+[28,'SBS',7,1,`CNOP-PBI020`,`PBI346,PBI321,PBI150,PBI151,PBI152`,0,`PLJ`,`PBI020`,`#N/A`,`#N/A`,`New Order 15 Sept 2026, osp ogp install`,1,0,`15/09/2026`,`29/10/2026`],
+[29,'SBT',0,1,`11348149`,`RDR PKR PT4 P2I2 PELALAWAN_233`,424,`PKR`,`PKR511`,`5. GoLive`,`NON PRIORITY`,`New Order 18 Sept 2026`,1,0,`18/09/2026`,`31/10/2026`],
+[30,'SBS',0,1,`12386323`,`BBL PT4 P4I3 DESA MELABUN & ROMADON CSF`,280,`PGP`,`KOB024`,`5. GoLive`,`NON PRIORITY`,`New Order 15 Sept 2026, osp ogp install`,1,0,`15/09/2026`,`01/11/2026`],
+[31,'SBU',0,1,`11450079`,`MDN PT4 PUB-FXX CITRALAND SEMPALI`,0,`PUB`,`DEPAN KOMPLEK CITRA LAND`,`5. GoLive`,`NON PRIORITY`,`New Order 22 Oct 2026, cascade Mini OLT Existing`,1,0,`22/10/2026`,`15/11/2026`],
+[32,'SBU',1,1,`13167067`,`MDN HEM TJR-FXX DITLANTAS POLDASU`,8,`TJR`,`DITLANTAS POLDASU`,``,`#N/A`,`New Order 18 Sept 2026`,1,0,`18/09/2026`,`17/11/2026`],
+[33,'SBS',7,1,`CNOP-SKY162`,`SKY120, SKY310, SKY171, SKY119`,0,`SKY`,`SKY162, Colo Mini OLT GPON00-D1-SKY-3DKL | ZTE`,`#N/A`,`#N/A`,`New Order TIF 5 Feb 2026`,0,0,`05/02/2026`,`23/02/2026`],
+[34,'SBS',5,1,`11388534`,`LPG JPP PT4 UNT FXX TULANG BAWANG_37 CSF`,408,`UNT`,`MGA025`,``,`#N/A`,`New Order 15 Sept 2026`,1,0,`15/09/2026`,`22/11/2026`],
+[35,'SBT',0,1,`13081521`,`RDR JPP PT3 TAMBAHAN UBT FJ 2`,176,`UBT`,`PPN645`,`5. GoLive`,`Prio Agustus 20 Branch`,`New Order 2 July, Done Survey Phase 1 lanjut Phase 2`,1,0,`02/07/2026`,``],
+[36,'SBT',0,1,`12892630`,`SMB-PT3-ODC-KJI-FE-250_-371_2411-3LOP`,160,`KJI`,`PAD166`,`5. GoLive`,`NON PRIORITY`,`New Order 2 July, Pending GDOC`,1,0,`02/07/2026`,``],
+[37,'SBT',0,1,`11334743`,`RDR MIS PT4 P1I1 DESA GARUT`,0,`MIS`,`BLS681`,`5. GoLive`,`Prio September 20 Branch`,`New Order 15 Sept 2026, Uplink Ready tanpa brecket`,1,0,`15/09/2026`,`01/12/2026`],
+[38,'SBT',0,1,`11363164`,`RDR JPP PT4 RAMBAH SAMO`,0,`PPN`,`PPN350`,`5. GoLive`,`Prio Oktober 20 Branch`,`New Order 15 Sept 2026, urgent site menjadi kabinet`,1,0,`15/09/2026`,`30/11/2026`],
+[39,'SBT',0,1,`13017099`,`RDR JPP PT4 TAMBUSAI 2`,672,`PPN`,`PPN598`,`5. GoLive`,`Prio September 20 Branch`,`New Order 15 Sept 2026, tidak butuh bracket`,1,0,`15/09/2026`,`30/11/2026`],
+[40,'SBS',0,1,`13115066`,`BBL PT4 MGR TRANS MEMBALONG 2026`,120,`MGR`,`TJN010`,`5. GoLive`,`Prio September 20 Branch`,`New Order TIF 5 Feb 2026`,0,0,`05/02/2026`,`24/02/2026`],
+[41,'SBS',0,1,`11263720`,`JBI-PT4+MINOL-MND-FAH-MUHAJIRIN`,568,`MND`,`SGE017`,`5. GoLive`,`Prio September 20 Branch`,`New Order 15 Sept 2026`,1,0,`15/09/2026`,`24/11/2026`],
+[42,'SBS',5,2,`11536915`,`SMS P4I4 PT4 SKY FXX MANGUNJAYA`,272,`SKY`,`SKY061`,``,`#N/A`,`New Order TIF 5 Feb 2026`,0,0,`05/02/2026`,`26/02/2026`],
+[43,'SBS',7,3,`OUTDOOR-33`,`OUTDOORISASI STO MDF TEMPILANG (TPL)`,0,`TPL`,`STO TPL`,`#N/A`,`#N/A`,`New Order 15 Sept 2026`,1,0,`15/09/2026`,`24/11/2026`],
+[44,'SBT',7,3,`OUTDOOR-35`,`OUTDOORISASI STO KOTA AGUNG (KGG)`,0,`KGG`,`STO KGG`,`#N/A`,`#N/A`,`New Order 15 Sept 2026`,1,0,`15/09/2026`,`01/12/2026`],
+[45,'SBS',0,3,`11808237`,`SMS PT4 ODC TMO FXX DESA PETRANS JAYA`,184,`TMO`,`LLG180`,`5. GoLive`,`Prio Agustus 20 Branch`,`New Order 15 Sept 2026, percepatan PLN & Sitac`,1,0,`15/09/2026`,`01/12/2026`],
+[46,'SBS',0,3,`11284542`,`SMS P4I1 PT4 MPA FXX LENGKIT CSF`,192,`MPA`,`OKU037`,`4. Finish Instal`,`NON PRIORITY`,`New Order 18 Sept 2026`,1,0,`18/09/2026`,``],
+[47,'SBS',0,3,`12439073`,`SMS P4I4 PT4 BLT XX SUKANEGERI ULAKBARU`,152,`BLT`,`MPR016`,`4. Finish Instal`,`NON PRIORITY`,`New Order 18 Sept 2026`,1,0,`18/09/2026`,``],
+[48,'SBT',0,3,`12156007`,`RDR JPP PT4 DESA GEMA KAMPAR KIRI`,0,`BKR`,`BKG050`,`3. OGP Instalasi`,`Prio Agustus`,`New Order 18 Sept 2026`,1,0,`18/09/2026`,``],
+[49,'SBT',0,3,`12921011`,`RDR JPP PT4 SIMPANG GRANIT SUNGAI AKAR`,432,`RGT`,`RGT536`,`4. Finish Instal`,`Prio Agustus`,`New Order 18 Sept 2026`,1,0,`18/09/2026`,``],
+[50,'SBS',0,3,`11800726`,`LPG PT4 JPP AIR NANINGAN CSF TGP`,280,`TGP`,`KOT074`,`3. OGP Instalasi`,`Prio Agustus`,`New Order 22 Oct 2026`,1,0,`22/10/2026`,`30/11/2026`],
+[51,'SBT',0,3,`11295907`,`JL LINTAS KM 11 SISI KIRI`,0,`PWG`,`KANTOR DESA`,`4. Finish Instal`,`NON PRIORITY`,`New Order 28 Oct 2026`,1,0,`28/10/2026`,`28/11/2026`],
+[52,'SBS',7,3,`OUTDOOR-66`,`OUTDOORISASI STO OKI (OKI)`,0,`OKI`,`STO OKI`,`#N/A`,`#N/A`,`New Order 28 Oct 2026, ganti jadi insertframe`,1,0,`28/10/2026`,`29/11/2026`],
+[53,'SBS',7,3,`OUTDOOR-67`,`OUTDOORISASI STO TANJUNG BATU (OKI)`,0,`TAB`,`STO TAB`,`#N/A`,`#N/A`,`New Order 3 Nov 2026`,1,0,`03/11/2026`,`02/12/2026`],
+[54,'SBU',7,3,`OUTDOOR-68`,`OUTDOORISASI STO JHANTO (JHO)`,0,`JHO`,`STO JHO`,`#N/A`,`#N/A`,`New Order 5 Nov 2026`,1,0,`05/11/2026`,`01/12/2026`],
+[55,'SBU',7,3,`OUTDOOR-82`,`OUTDOORISASI STO TANGSE (TSE) (COLO Z-H) - ZTE`,0,`TSE`,`STO TSE`,`#N/A`,`#N/A`,`New Order 5 Nov 2026`,1,0,`05/11/2026`,`22/11/2026`],
+[56,'SBT',0,3,`13070500`,`RDR JPP PT4 EXPAND RAWANG KAO`,656,`PKR`,`SSI293`,`4. Finish Instal`,`NON PRIORITY`,`New Order TIF 26 Feb 2026`,0,0,`26/02/2026`,`05/03/2026`],
+[57,'SBS',0,3,`11862037`,`LPG PT4 JPP SIMPANG PROPAU CSF KBI`,400,`KBI`,`KBI008`,`3. OGP Instalasi`,`Prio Agustus`,`Order 10 Nov 2026`,1,0,`10/11/2026`,`01/12/2026`],
+[58,'SBS',0,3,`13120707`,`LPG JPP PT4 BKM-FXX CSF r_2500_-210_427`,456,`BKM`,`BLU002`,`3. OGP Instalasi`,`Prio Agustus`,`New Order TIF 20 Feb 2026`,0,0,`20/02/2026`,`09/03/2026`],
+[59,'SBS',0,3,`13021182`,`JBI-JPP-PT4-MINI OLT-MAB-GAPURA SUCI`,0,`MAB`,`MAB018`,`3. OGP Instalasi`,`Prio Oktober 20 Branch`,`New Order 10 June 2026, Drop OSP info TA 13 July 2026`,1,0,`10/06/2026`,``],
+[60,'SBS',0,3,`13096755`,`BBL PT4 JPP BATU BERIGA CSF`,208,`KBO`,`KOB039`,`4. Finish Instal`,`Prio Oktober 20 Branch`,`New Order 2 July, update GDOC Tidak Lanjut`,1,0,`02/07/2026`,``],
+[61,'SBU',0,3,`11288294`,`ACH PT4 KTN-FJ LAWE SIGALA-GALA_MD`,240,`KTN`,`GPON00-D1-KTN-2SMD (KTN754)`,`4. Finish Instal`,`Prio Oktober 20 Branch`,`New Order TIF 26 Feb 2026, delivery ke Belitung`,0,0,`26/02/2026`,`08/04/2026`],
+[62,'SBS',0,3,`12308752`,`BNK JPP PT4 BNC AGR044 28399_H2_2025`,432,`AGR`,`AGR044`,`4. Finish Instal`,`Prio Oktober 20 Branch`,`New Order 2 July, update GDOC Tidak Lanjut`,1,0,`02/07/2026`,``],
+[63,'SBS',0,4,`11518004`,`SMS P3I1 PT4 LHT FXX DESA MUARA SALING`,152,`LHT`,`LHT146`,`0. Drop`,`Prio September 20 Branch`,`New Order 11 Sept 2026, Drop site 23 Oct 2026`,1,0,`11/09/2026`,``],
+[64,'SBT',7,4,`OUTDOOR-34`,`OUTDOORISASI STO BELAKANG PADANG (BLP)`,0,`BLP`,`STO BLP`,`#N/A`,`#N/A`,`New Order 15 Sept 2026, Confirm Drop Meeting TIF HO`,1,0,`15/09/2026`,``],
+[65,'SBT',7,4,`OUTDOOR-36`,`OUTDOORISASI STO TUA PEJAT (TPJ)`,0,`TPJ`,`STO TPJ`,`#N/A`,`#N/A`,`New Order 15 Sept 2026`,1,0,`15/09/2026`,``],
+[66,'SBT',0,4,`11541430`,`SMB STTF KOTO BALINKA ABG-PERM.PT.USM`,208,`UGD`,`LSK118`,`3. OGP Instalasi`,`Prio September`,`New Order 30 Sept 2026, Drop site 23 Oct 2026`,1,0,`30/09/2026`,``],
+[67,'SBU',0,4,`11113042`,`SMU-ODC-KBJ-FAE SUMUT_233`,0,`KBJ`,`MINI OLT MEREK`,`5. GoLive`,`NON PRIORITY`,`New Order TIF 26 Feb 2026`,0,0,`26/02/2026`,`06/04/2026`],
+[68,'SBS',5,4,`12522479`,`PT4 TULANG BAWANG BARAT_19363 CSF UNT`,160,`UNT`,`MGA066`,``,`#N/A`,`New Order TIF 26 Feb 2026`,0,0,`26/02/2026`,`06/04/2026`],
+[69,'SBS',0,4,`12099135`,`LPG PT4 JPP KOT020_CukuhBalak CSF TJK`,136,`TJK`,`KOT020`,`4. Finish Instal`,`Prio September`,`New Order 3 Nov 2026`,1,0,`03/11/2026`,``],
+[70,'SBS',0,4,`13068086`,`SMS JPP PT4 ODC PGA FXX NANDO KEPAHIANG`,152,`PGA`,`LHT205`,`5. GoLive`,`Prio Agustus 20 Branch`,`New Order TIF 12 Mar 2026`,0,0,`12/03/2026`,`12/04/2026`],
+[71,'SBT',0,4,`11095310`,`SMB P7I9 STTF KAJAI`,216,`SPE`,`LSK088`,`2. Matdel`,`Prio Oktober 20 Branch`,`New Order 5 Nov 2026, relok ke LSK010`,1,0,`05/11/2026`,``],
+[72,'SBT',0,5,`11541414`,`SMB STTF SILAPIANG ABG-5 LOP`,72,`UGD`,`LSK010`,`3. OGP Instalasi`,`Prio Oktober 20 Branch`,`New Order 11 Sept 2026, Order reopen balik ke ZTE`,1,0,`11/09/2026`,`30/11/2026`],
+[73,'SBT',0,5,`13010126`,`RDR JPP PT4 DESA TENGGAYUN 2`,624,`SGP`,`BLS612`,`3. OGP Instalasi`,`Prio Oktober 20 Branch`,`New Order 28 Oct 2026`,1,0,`28/10/2026`,`03/12/2026`],
+[74,'SBT',0,5,`11511702`,`RDR JPP PT4 BANDAR PETALANGAN`,352,`SOK`,`PKR573`,`3. OGP Instalasi`,`NON PRIORITY`,`New Order 30 Oct 2026`,1,0,`30/10/2026`,`03/12/2026`],
+[75,'SBU',7,5,`OUTDOOR-101`,`OUTDOORISASI STO KUALA SIMPANG (KSG) (COLO H-Z) - ZTE`,0,`KSG`,`STO KSG`,`#N/A`,`#N/A`,`New Order 5 Nov 2026`,2,1,`05/11/2026`,`29/11/2026`],
+[76,'SBT',0,5,`13123022`,`RDR JPP PT4 2500_16_294_SIAK HULU`,0,`RBI`,`BKG057`,`3. OGP Instalasi`,`Prio September 20 Branch`,`New Order 2 Nov 2026`,1,0,`02/11/2026`,``],
+[77,'SBU',0,5,`11388900`,`ACH PT4 MBO-FAC ARONGAN LAMBALEK`,280,`MBO`,`MBO102`,`2. Matdel`,`Prio Oktober 20 Branch`,`New Order 3 Nov 2026`,1,0,`03/11/2026`,`23/11/2026`],
+[78,'SBT',0,5,`12901218`,`RDR JPP PT3 INDRAGIRI HILIR_10904`,80,`TBH`,`SHELTER TELKOM TELUK KIAMBANG`,`4. Finish Instal`,`Prio September 20 Branch`,`New Order 5 Nov 2026`,1,0,`05/11/2026`,`03/12/2026`],
+[79,'SBT',6,5,`13150414`,`RDR JPP PT4 Mekar Jaya Kampar Kiri`,0,`BKR`,`BKG091`,``,`#N/A`,`New Order 5 Nov 2026`,1,0,`05/11/2026`,`01/12/2026`],
+[80,'SBT',5,5,`11297587`,`RDR JPP PT4 DESA INTAN JAYA`,336,`UBT`,`PPN531`,``,`#N/A`,`Order 17 Nov 2026`,1,0,`17/11/2026`,`01/12/2026`],
+[81,'SBT',5,5,`11128154`,`RDR JPP PT3 KINANTAN JAYA`,272,`BKN`,`BKG036`,``,`#N/A`,`New Order 30 Sept 2026`,1,0,`30/09/2026`,`01/12/2026`],
+[82,'SBT',7,5,`OUTDOOR-98`,`OUTDOORISASI STO PASAR BARU (PSB) (COLO H-Z) - ZTE`,0,`PSB`,`STO PSB`,`#N/A`,`#N/A`,`New Order 30 Sept 2026`,1,0,`30/09/2026`,`24/11/2026`],
+[83,'SBU',7,5,`OUTDOOR-100`,`OUTDOORISASI STO SIPIROK (SIP) (COLO H-Z) - ZTE`,0,`SIP`,`STO SIP`,`#N/A`,`#N/A`,`New Order 2 Nov 2026`,1,0,`02/11/2026`,``],
+[84,'SBT',0,5,`13098028`,`SMB-ODC-LESS-LIN-2500_-26_261`,160,`LIN`,`MSJ065`,`2. Matdel`,`Prio Oktober 20 Branch`,`New Order 2 Nov 2026`,1,0,`02/11/2026`,``],
+[85,'SBS',4,5,`13392205`,`1JBI OLO PAP-SGE013 ATJ_TANJUNG-KUMPEH`,0,`PAP`,`SGE014`,``,`#N/A`,`New Order 5 Nov 2026`,1,0,`05/11/2026`,`30/11/2026`],
+[86,'SBT',0,6,`11532467`,`SMB STTF BranchBKT_PYK_Ampalu_2`,8,`PNB`,`SITE PAKAN RABAA`,`3. OGP Instalasi`,`Prio Oktober 20 Branch`,`EXCHANGE LOCATION`,1,2,`26/10/2026`,`30/11/2026`],
+[87,'SBT',0,6,`11541430`,`SMB STTF KOTO BALINKA ABG-PERM.PT.USM`,208,`UGD`,`LSK118`,`3. OGP Instalasi`,`Prio September`,`GO DEPLOY`,1,2,`27/10/2026`,`01/12/2026`],
+[88,'SBT',0,6,`11541414`,`SMB STTF SILAPIANG ABG-5 LOP`,72,`UGD`,`LSK010`,`3. OGP Instalasi`,`Prio Oktober 20 Branch`,`GO DEPLOY`,1,2,`28/10/2026`,`01/12/2026`],
+[89,'SBS',0,6,`12099135`,`LPG PT4 JPP KOT020_CukuhBalak CSF TJK`,136,`TJK`,`KOT020`,`4. Finish Instal`,`Prio September`,`GO DEPLOY`,1,2,`29/10/2026`,`25/11/2026`],
+[90,'SBT',3,3,`OUTDOOR-10`,`OUTDOORISASI STO KOTO BARU (KOU)`,0,`KOU`,`STOKOU`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,1,2,`29/09/2026`,``],
+[91,'SBT',3,3,`OUTDOOR-11`,`OUTDOORISASI STO KAYU TANAM (KYT)`,0,`KYT`,`STOKYT`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,1,2,`21/08/2026`,``],
+[92,'SBT',3,3,`OUTDOOR-12`,`OUTDOORISASI STO PAUH KAMBAR (PUK)`,0,`PUK`,`STOPUK`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,1,2,`22/08/2026`,``],
+[93,'SBT',3,3,`OUTDOOR-13`,`OUTDOORISASI STO SIMALANGGANG (SIG)`,0,`SIG`,`STOSIG`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,1,2,`22/08/2026`,``],
+[94,'SBT',3,3,`OUTDOOR-14`,`OUTDOORISASI STO SALIMPAUNG (SIU)`,0,`SIU`,`STOSIU`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,1,2,`23/08/2026`,``],
+[95,'SBT',3,3,`OUTDOOR-15`,`OUTDOORISASI STO SIMABUR (SMU)`,0,`SMU`,`STOSMU`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,1,2,`28/09/2026`,``],
+[96,'SBT',3,3,`OUTDOOR-16`,`OUTDOORISASI STO SUNGAI PUAR (SUP)`,0,`SUP`,`STOSUP`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,1,2,`26/09/2026`,``],
+[97,'SBT',3,3,`OUTDOOR-17`,`OUTDOORISASI STO BATANG KAPAS (BKP)`,0,`BKP`,`STOBKP`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,1,2,`19/08/2026`,``],
+[98,'SBT',3,3,`OUTDOOR-18`,`OUTDOORISASI STO GUNUNG MEDAN (GMN)`,0,`GMN`,`STOGMN`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,1,2,`18/08/2026`,``],
+[99,'SBT',3,3,`OUTDOOR-19`,`OUTDOORISASI STO MUARA SIBERUT (MSB)`,0,`MSB`,`STOMSB`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,1,2,`28/09/2026`,``],
+[100,'SBT',3,3,`OUTDOOR-20`,`OUTDOORISASI STO SILUNGKANG (SLN)`,0,`SLN`,`STOSLN`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,1,2,`19/08/2026`,``],
+[101,'SBT',3,3,`OUTDOOR-21`,`OUTDOORISASI STO SURANTIH (SRT)`,0,`SRT`,`STOSRT`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,1,2,`20/08/2026`,``],
+[102,'SBS',3,3,`OUTDOOR-72`,`OUTDOORISASI STO KALIREJO (KLR)`,0,`KLR`,`STOKLR`,`#N/A`,`#N/A`,`Pending confirmation from customer`,2,3,`28/09/2026`,``],
+[103,'SBT',3,3,`OUTDOOR-74`,`OUTDOORISASI STO SEI LIMAU (SLM)`,0,`SLM`,`STOSLM`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,1,2,`27/09/2026`,``],
+[104,'SBT',3,3,`OUTDOOR-75`,`OUTDOORISASI STO TIKU (TKU)`,0,`TKU`,`STOTKU`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,1,2,`27/09/2026`,``],
+[105,'SBT',3,3,`OUTDOOR-78`,`OUTDOORISASI STO KAMANG (KMN)`,0,`KMN`,`STOKMN`,`#N/A`,`#N/A`,`ongoing get confirmation from regional`,2,3,`26/09/2026`,``],
+[106,'SBU',3,3,`OUTDOOR-81`,`OUTDOORISASI STO TANGSE (TSE) (COLO Z-H) - HUAWEI`,0,`TSE`,`STOTSE`,`#N/A`,`#N/A`,`Pending confirmation from regional regarding decision BIG OLT`,1,2,`29/09/2026`,``],
+[107,'SBS',5,7,`12522479`,`5MDR_KML_PT4_UPLINK MINI OLT-KWANYAR 2 CSF`,160,`UNT`,`MGA066`,``,`#N/A`,``,0,4,`13/11/2026`,`19/11/2026`],
+[108,'SBS',5,7,`11472455`,`SMS P3I1 PT4 PGA FXX SLEMAN ULU`,144,`PGA`,`LHT205`,``,`#N/A`,``,0,5,`14/11/2026`,`21/11/2026`],
+[109,'SBS',5,7,`12431248`,`BNK PT4 BTH BIN003 JPPTSEL NASAL`,328,`BTH`,`BIN003`,``,`#N/A`,``,0,6,`15/11/2026`,`24/11/2026`],
+[110,'SBS',0,4,`12134653`,`JBI-PT3-MBN-FR-ID 549460`,96,`MBN`,`MBN006`,`5. GoLive`,`NON PRIORITY`,``,0,7,`16/11/2026`,``],
+[111,'SBS',7,1,`#N/A`,`#N/A`,0,`LSK`,`SITE TSEL KRB147 - TUALANG CUT`,`#N/A`,`#N/A`,`Insert di Mini OLT Recovery`,3,8,`28/08/2026`,``],
+[112,'SBS',0,1,`13113131`,`BBL PT3B KBO-FC MERDEKA KOBA 2026`,80,`KBO`,`GPON01-D1-KBO-3`,`5. GoLive`,`Prio Agustus 20 Branch`,`New Order 21 August 2026`,3,8,`28/08/2026`,``],
+[113,'SBS',7,1,`#N/A`,`#N/A`,0,`MGR`,`GPON00-D1-MGR-3LMM`,`#N/A`,`#N/A`,`New Order 21 August 2026`,3,8,`28/08/2026`,``],
+[114,'SBS',0,1,`12941154`,`BABEL-JPP-PT3BRANCH-ODC-PGP-FBY-565543`,8,`PGP`,`GPON08-D1-PGP-3`,`5. GoLive`,`Prio September 20 Branch`,`New Order 21 August 2026`,3,8,`28/08/2026`,``],
+[115,'SBS',0,1,`12942304`,`BABEL JPP PT3-ODC-SLT-FF`,8,`SLT`,`GPON02-D1-SLT-3`,`5. GoLive`,`Prio September 20 Branch`,`New Order 21 August 2026`,3,8,`28/08/2026`,``],
+[116,'SBS',0,1,`13115122`,`BBL PT4 TBI-FB SIMPANG LIMA 2026`,136,`TBI`,`GPON01-D1-TBI-3`,`5. GoLive`,`NON PRIORITY`,`New Order 21 August 2026`,3,8,`28/08/2026`,``],
+[117,'SBS',0,1,`12995819`,`SMS JPP PT3 TMO FM D03 FAJAR 2`,48,`TMO`,`GPON01-D1-TMO-3`,`5. GoLive`,`Prio Agustus 20 Branch`,`New Order 7 Sept 2026`,3,8,`11/09/2026`,``],
+[118,'SBS',5,1,`11242179`,`JBI-PT3-MBN-FAB-BATIN BAJUBANG`,352,`MBN`,`GPON00-D1-MBN-3BJB`,``,`#N/A`,`New Order 7 Sept 2026, Reloc on 24 Sept 2026`,3,8,`11/09/2026`,``],
+[119,'SBS',7,1,`#N/A`,`#N/A`,0,`PDT`,`GPON01-D1-PDT-3`,`#N/A`,`#N/A`,`New Order 7 Sept 2026`,3,8,`11/09/2026`,``],
+[120,'SBT',7,1,`#N/A`,`#N/A`,0,`BUG`,`GPON02-D1-BGU-3`,`#N/A`,`#N/A`,`New Order 7 Sept 2026, Reloc on 24 Sept 2026`,3,8,`11/09/2026`,``],
+[121,'SBT',0,1,`13096424`,`RDR JPP PT3 TAMBAHAN BKN FAH`,448,`BKN`,`GPON01-D1-BKN-3`,`5. GoLive`,`Prio Agustus 20 Branch`,`New Order 7 Sept 2026`,3,8,`11/09/2026`,``],
+[122,'SBT',0,1,`13144526`,`RDR JPP PT3 EXPAND DUM FAU`,144,`DUM`,`GPON00-D1-DUM-3SDI`,`1. Persiapan`,`Prio Oktober 20 Branch`,`New Order 7 Sept 2026`,3,8,`11/09/2026`,``],
+[123,'SBT',7,1,``,`RDR PT2 LEADING SUPPLY DUM FBG`,0,`DUM`,`GPON04-D1-DUM-3BBS`,`#N/A`,`#N/A`,`New Order 7 Sept 2026`,3,8,`11/09/2026`,``],
+[124,'SBT',7,1,``,`RDR JPP PT3 2500_74_288_DUMAI KOTA`,0,`DUM`,`GPON03-D1-DUM-3`,`#N/A`,`#N/A`,`New Order 7 Sept 2026`,3,8,`11/09/2026`,``],
+[125,'SBT',7,1,``,`RDR PT2 LEADING SUPPLY PPN FT`,0,`PPN`,`GPON01-D1-PPN-3`,`#N/A`,`#N/A`,`New Order 7 Sept 2026`,3,8,`11/09/2026`,``],
+[126,'SBT',7,1,`#N/A`,`#N/A`,0,`BDT`,`GPON00-D1-BDT-3`,`#N/A`,`#N/A`,`New Order 7 Sept 2026`,3,8,`11/09/2026`,``],
+[127,'SBT',5,1,`10638292`,`SMB-STTF - 3 LOP UNSC`,24,`TPN`,`GPON01-D1-TPN-3IDR`,``,`#N/A`,`New Order 7 Sept 2026`,3,8,`11/09/2026`,``],
+[128,'SBT',7,1,``,`RDR JPP PT3 2500_20_285_TAMPAN`,0,`ARK`,`GPON09-D1-ARK-3`,`#N/A`,`#N/A`,`New Order 7 Sept 2026`,3,8,`11/09/2026`,``],
+[129,'SBT',7,1,`#N/A`,`#N/A`,0,`RGT`,`GPON01-D1-RGT-3`,`#N/A`,`#N/A`,`New Order 7 Sept 2026`,3,8,`11/09/2026`,``],
+[130,'SBT',7,1,`#N/A`,`#N/A`,0,`SAK`,`GPON01-D1-SAK-3`,`#N/A`,`#N/A`,`New Order 7 Sept 2026`,3,8,`11/09/2026`,``],
+[131,'SBS',5,1,`11237081`,`SMS P1I1 PT3 TRA FF D02 PINANG MAS`,64,`TRA`,`GPON01-D1-TRA-3`,``,`#N/A`,`New Order 18 Sept 2026`,3,8,`14/10/2026`,``],
+[132,'SBS',5,1,`12383618`,`SMS P4I3 PT3 PLJ FBS D01 JL REFINERY`,48,`PLJ`,`GPON02-D1-PLJ-3`,``,`#N/A`,`New Order 18 Sept 2026`,3,8,`14/10/2026`,``],
+[133,'SBT',7,5,`#N/A`,`#N/A`,0,`MIS`,`GPON00-D1-MIS-3TTT`,`#N/A`,`#N/A`,`New Order 18 Sept 2026, menunggu surat izin masuk`,3,8,`14/10/2026`,``],
+[134,'SBU',7,1,`#N/A`,`#N/A`,0,`LGS`,`GPON04-D1-LGS-3`,`#N/A`,`#N/A`,`New Order 18 Sept 2026, menunggu surat izin masuk`,3,8,`14/10/2026`,``],
+[135,'SBU',0,1,`11288315`,`MDN PT3 CTD-FCW GRIYA SUKA MAJU ASRI`,80,`CTD`,`GPON00-D1-CTD-3MCR`,`1. Persiapan`,`NON PRIORITY`,`New Order 18 Sept 2026, menunggu surat izin masuk`,3,8,`14/10/2026`,``],
+[136,'SBU',7,1,`#N/A`,`#N/A`,0,`TMU`,`GPON05-D1-TMU-3`,`#N/A`,`#N/A`,`New Order 18 Sept 2026, menunggu surat izin masuk`,3,8,`14/10/2026`,``],
+[137,'SBS',7,5,``,`MGR030 CendilBunding`,0,`MGR`,`GPON00-D1-MGR-3GTO`,`#N/A`,`#N/A`,`New Order 25 September 2026`,3,8,`26/10/2026`,``],
+[138,'SBS',7,5,`#N/A`,`#N/A`,0,`KBO`,`GPON01-D1-KBO-3LBK`,`#N/A`,`#N/A`,`New Order 25 September 2026`,3,8,`26/10/2026`,``],
+[139,'SBS',5,5,`11867723`,`LPG PT3 JPP SUKAJADI PESAWARAN 2 GDT`,0,`GDT`,`GPON02-D1-GDT-3`,``,`NON PRIORITY`,`New Order 25 September 2026`,3,8,`26/10/2026`,``],
+[140,'SBS',0,5,`13196393`,`BNK JPP PT3 BRC MNA FU KEMANG MANIS`,0,`MNA`,`GPON00-D1-MNA-3PSR`,`5. GoLive`,`Prio Agustus 20 Branch`,`New Order 25 September 2026`,3,8,`26/10/2026`,``],
+[141,'SBS',7,5,``,`OKI169 Sungai Rambutan`,0,`SBU`,`GPON04-D1-SBU-3`,`#N/A`,`#N/A`,`New Order 25 September 2026`,3,8,`26/10/2026`,``],
+[142,'SBT',0,5,`11517851`,`SMB P3I1 Koto Hilalang Sungai Langkok`,0,`SUN`,`GPON01-D1-SUN-3APL`,`5. GoLive`,`Prio September`,`New Order 25 September 2026`,3,8,`26/10/2026`,``],
+[143,'SBS',7,5,`#N/A`,`#N/A`,0,`PDT`,`GPON01-D1-PDT-3`,`#N/A`,`#N/A`,`New Order 25 September 2026`,3,8,`26/10/2026`,``],
+[144,'SBS',5,5,`12252519`,`BNK PT3 IPU FK JPPTSEL 28229_H2_2025`,0,`IPU`,`GPON00-D1-IPU-3KBN`,``,`#N/A`,`P1 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[145,'SBS',5,5,`12367089`,`BNK PT3 JPPTSEL MUKO MUKO_55693_H2_2025`,0,`IPU`,`GPON00-D1-IPU-3AHT`,``,`#N/A`,`P1 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[146,'SBS',7,5,`#N/A`,`#N/A`,0,`LHT`,`GPON01-D1-LHT-3`,`#N/A`,`#N/A`,`P1 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[147,'SBS',7,5,`#N/A`,`#N/A`,0,`LLG`,`GPON02-D1-LLG-3`,`#N/A`,`#N/A`,`P1 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[148,'SBS',7,5,`#N/A`,`#N/A`,0,`PDP`,`GPON01-D1-PDP-3`,`#N/A`,`#N/A`,`P1 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[149,'SBS',5,5,`11242179`,`JBI-PT3-MBN-FAB-BATIN BAJUBANG`,352,`MBN`,`GPON00-D1-MBN-3BJB`,``,`#N/A`,`P1 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[150,'SBS',7,5,``,`OKI105 TBG_DesaBarat`,0,`KAG`,`GPON00-D1-KAG-3PLM`,`#N/A`,`#N/A`,`P1 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[151,'SBS',7,5,``,`PLG021`,0,`PGC`,`GPON09-D1-PGC-3`,`#N/A`,`#N/A`,`P1 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[152,'SBS',7,5,`#N/A`,`#N/A`,0,`TAB`,`GPON00-D1-TAB-3`,`#N/A`,`#N/A`,`P1 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[153,'SBS',0,1,`12941718`,`BABEL-JPP-PT3 BRANCHING-ODC-BYU-568669`,0,`BYU`,`GPON01-D1-BYU-3`,`5. GoLive`,`Prio September 20 Branch`,`P1 New Order 15 Oktober 2026`,3,8,`22/10/2026`,``],
+[154,'SBS',0,1,`13115120`,`BBL PT3 MGR-FG JL SDN9 MGR 2026`,40,`MGR`,`GPON01-D1-MGR-3`,`5. GoLive`,`Prio Agustus 20 Branch`,`P1 New Order 15 Oktober 2026`,3,8,`22/10/2026`,``],
+[155,'SBS',7,1,``,`MTK066 TANJUNGKALIAN2`,0,`MTK`,`GPON02-D1-MTK-3`,`#N/A`,`#N/A`,`P1 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[156,'SBT',0,5,`13096459`,`RDR JPP PT3 TAMBAHAN BKN FAS`,104,`BKN`,`GPON01-D1-BKN-3FBY`,`2. Matdel`,`Prio Oktober 20 Branch`,`P1 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[157,'SBS',0,5,`13275319`,`BNK JPP PT3 IPU FP DS KARYA PELITA`,0,`AGR`,`GPON00-D1-IPU-3MSS`,`5. GoLive`,`Prio Oktober 20 Branch`,`P2 New Order 15 Oktober 2026, Order urgent`,3,8,`16/11/2026`,``],
+[158,'SBS',7,5,`#N/A`,`#N/A`,0,`CRP`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[159,'SBS',7,5,`#N/A`,`#N/A`,0,`PDW`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[160,'SBS',7,5,`#N/A`,`#N/A`,0,`SPP`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[161,'SBS',7,5,`#N/A`,`#N/A`,0,`SPN`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[162,'SBS',7,5,`#N/A`,`#N/A`,0,`BLT`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[163,'SBS',7,5,`#N/A`,`#N/A`,0,`BTA`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[164,'SBS',7,5,`#N/A`,`#N/A`,0,`IDL`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[165,'SBS',7,5,`#N/A`,`#N/A`,0,`MEM`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[166,'SBS',7,5,`#N/A`,`#N/A`,0,`SBU`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[167,'SBS',7,5,`#N/A`,`#N/A`,0,`SKY`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[168,'SBS',7,5,`#N/A`,`#N/A`,0,`SRO`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[169,'SBT',7,5,`#N/A`,`#N/A`,0,`BTC`,`GPON08-D1-BTC-3`,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[170,'SBT',7,5,`#N/A`,`#N/A`,0,`DBS`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[171,'SBT',7,5,`#N/A`,`#N/A`,0,`DGS`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[172,'SBT',7,5,`#N/A`,`#N/A`,0,`KAI`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[173,'SBT',7,5,`#N/A`,`#N/A`,0,`KIJ`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[174,'SBT',7,5,`#N/A`,`#N/A`,0,`KMS`,`GPON03-D1-KMS-3`,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[175,'SBT',7,5,`#N/A`,`#N/A`,0,`LBJ`,`GPON08-D1-LBJ-3`,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[176,'SBT',7,5,`#N/A`,`#N/A`,0,`NGS`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[177,'SBT',7,5,`#N/A`,`#N/A`,0,`SLU`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[178,'SBT',7,5,`#N/A`,`#N/A`,0,`TUB`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[179,'SBT',7,5,`#N/A`,`#N/A`,0,`BAS`,`GPON01-D1-BAS-3`,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[180,'SBT',7,5,`#N/A`,`#N/A`,0,`BGU`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[181,'SBT',7,5,`#N/A`,`#N/A`,0,`BKN`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[182,'SBT',7,5,``,`RGT053`,0,`TAK`,`GPON01-D1-TAK-3PNP`,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[183,'SBT',7,5,`#N/A`,`#N/A`,0,`UBT`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[184,'SBT',7,5,`#N/A`,`#N/A`,0,`BDT`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[185,'SBT',5,1,`12155618`,`RDR JPP PT4 GERBANG SARI`,72,`TBH`,`GPON00-D1-TBH-3SPR`,``,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[186,'SBT',7,5,`#N/A`,`#N/A`,0,`BKR`,`GPON00-D1-BKR-3SKY`,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[187,'SBT',7,5,`#N/A`,`#N/A`,0,`PKR`,`GPON00-D1-PKR-3LGN`,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[188,'SBT',0,5,`12204737`,`RDR JPP PT3 SIAK_90974_H2_2025`,40,`SAK`,`GPON01-D1-SAK-3BGR`,``,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[189,'SBU',7,5,`#N/A`,`#N/A`,0,`BJI`,``,`#N/A`,`#N/A`,`P2 New Order 15 Oktober 2026`,3,8,`26/10/2026`,``],
+[190,'SBS',5,1,`12306824`,`LPG PT3 TULANG BAWANG_126491_H2_2025 UNT`,0,`UNT`,`GPON02-D1-UNT-2`,``,`#N/A`,``,3,9,`29/09/2026`,`16/10/2026`],
+[191,'SBS',7,1,``,`GNS117 NAMBAHDADITERBANGGI`,0,`BDA`,`GPON00-D1-BDA-2SMT`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,`28/10/2026`],
+[192,'SBS',0,1,`12814863`,`LPG PT3 JPP LAMPUNG UTARA_118298 KBI`,12,`KBI`,`GPON02-D1-KBI-2`,`3. OGP Instalasi`,`NON PRIORITY`,``,3,9,`19/10/2026`,`26/10/2026`],
+[193,'SBS',7,1,`#N/A`,`#N/A`,0,`LIW`,`GPON01-D1-LIW-2`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,`27/10/2026`],
+[194,'SBS',5,1,`12753192`,`12753192-LPG PT3 JPP LAMPUNG TIMUR_109720 MET`,48,`MET`,`GPON00-D1-MET-2MKB`,``,`NON PRIORITY`,``,3,9,`25/10/2026`,`04/11/2026`],
+[195,'SBS',5,1,`12114271`,`LPG PT3 JPP LIWA NANGKA BAHAWAI LIW`,56,`BKM`,`GPON01-D1-BKM-2`,``,`#N/A`,``,3,9,`25/10/2026`,`16/11/2026`],
+[196,'SBS',7,1,`#N/A`,`#N/A`,0,`TJK`,`GPON10-D1-TJK-2`,`#N/A`,`#N/A`,``,3,9,`08/11/2026`,`12/11/2026`],
+[197,'SBT',0,1,`11511850`,`SMB P3I1 Tapian Danau ALH`,40,`ALH`,`GPON00-D1-ALH-2`,`5. GoLive`,`NON PRIORITY`,``,3,9,`24/08/2026`,`11/09/2026`],
+[198,'SBT',7,1,`#N/A`,`#N/A`,0,`BKT`,`GPON03-D1-BKT-2`,`#N/A`,`#N/A`,``,3,9,`11/09/2026`,`18/09/2026`],
+[199,'SBT',0,1,`12948670`,`SMB-PT2LS-ODC-BSK-FE-2518 - -2518`,8,`BSK`,`GPON01-D1-BSK-2`,`0. Drop`,`#N/A`,``,3,9,`11/09/2026`,`18/09/2026`],
+[200,'SBT',0,1,`12944381`,`SMB MD PT3-LBB-FB 250_-150_2252`,64,`LBB`,`GPON01-D1-LBB-2`,`5. GoLive`,`Prio Agustus 20 Branch`,``,3,9,`11/09/2026`,`18/09/2026`],
+[201,'SBT',0,1,`11858610`,`SUMBAR-PT2-ODC-LIN-FB-TANAH DATAR`,16,`LIN`,`GPON01-D1-LIN-2`,`0. Drop`,`#N/A`,``,3,9,`11/09/2026`,`19/09/2026`],
+[202,'SBT',7,1,``,``,0,`PYK`,`GPON02-D1-PYK-2`,`#N/A`,`#N/A`,``,3,9,`11/09/2026`,`17/09/2026`],
+[203,'SBT',0,1,`12941866`,`SMB-JPP-PT3-ODC-SGD-FF-DHARMASRAYA_98909`,8,`GMN`,`GPON00-D1-GMN-2`,`5. GoLive`,`Prio September`,``,3,9,`11/09/2026`,`20/10/2026`],
+[204,'SBT',7,1,`#N/A`,`#N/A`,0,`LIM`,`GPON01-D1-LIM-2`,`#N/A`,`#N/A`,``,3,9,`11/09/2026`,`18/09/2026`],
+[205,'SBT',0,1,`10960530`,`SMB P7I2 PISANG BEREBUS`,72,`SGD`,`GPON01-D1-SGD-2`,`5. GoLive`,`Prio September`,``,3,9,`11/09/2026`,`19/09/2026`],
+[206,'SBT',7,1,``,``,0,`LBA`,`GPON01-D1-LBA-2`,`#N/A`,`#N/A`,``,3,9,`22/09/2026`,`29/09/2026`],
+[207,'SBT',5,1,`10505574`,`SMB P1I1 SUNGAI KAPU PAKAN RABAA MLH_REV`,0,`MLH`,`GPON01-D1-MLH-2`,``,`#N/A`,``,3,9,`22/09/2026`,`30/09/2026`],
+[208,'SBT',0,1,`13035687`,`SMB PT3-SWL-FB 250_-293_2580`,0,`SWL`,`GPON01-D1-SWL-2`,`5. GoLive`,`NON PRIORITY`,``,3,9,`22/09/2026`,`30/09/2026`],
+[209,'SBT',7,1,`#N/A`,`#N/A`,0,`TRS`,`GPON01-D1-TRS-2`,`#N/A`,`#N/A`,``,3,9,`22/09/2026`,`29/09/2026`],
+[210,'SBT',0,1,`12541716`,`RDR JPP PT3 Tokyo Hikari Residence`,184,`PBB`,`GPON06-D1-PBB-2`,`5. GoLive`,`Prio Agustus`,``,3,9,`22/09/2026`,`30/09/2026`],
+[211,'SBT',0,1,`13098128`,`SMB PT3-BLS-FD_2500_-82_260`,0,`BLS`,`GPON01-D1-BLS-2`,`5. GoLive`,`Prio September`,``,3,9,`29/09/2026`,`11/10/2026`],
+[212,'SBT',7,1,`#N/A`,`#N/A`,0,`LBS`,`GPON01-D1-LBS-2`,`#N/A`,`#N/A`,``,3,9,`29/09/2026`,`13/10/2026`],
+[213,'SBT',0,1,`13283017`,`SMB-PT3-TLB-FJ-DMJ Eleven Pengambiran`,0,`TLB`,`GPON02-D1-TLB-2`,`5. GoLive`,`Prio September`,``,3,9,`29/09/2026`,`10/10/2026`],
+[214,'SBT',7,5,`#N/A`,`#N/A`,0,`HRU`,`GPON01-D1-HRU-2`,`#N/A`,`#N/A`,`relok ke payakumbuah`,3,9,`19/10/2026`,``],
+[215,'SBT',7,1,``,``,0,`PYK`,`GPON02-D1-PYK-2`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,`29/10/2026`],
+[216,'SBT',7,5,`#N/A`,`#N/A`,0,`KOU`,`GPON00-D1-KOU-2`,`#N/A`,`#N/A`,`relok ke LINTAU`,3,9,`19/10/2026`,``],
+[217,'SBT',0,1,`11858610`,`SUMBAR-PT2-ODC-LIN-FB-TANAH DATAR`,16,`LIN`,`GPON01-D1-LIN-2`,`0. Drop`,`#N/A`,``,3,9,`19/10/2026`,`29/10/2026`],
+[218,'SBT',7,1,`#N/A`,`#N/A`,0,`KYT`,`GPON00-D1-KYT-2`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,`26/10/2026`],
+[219,'SBT',7,1,`#N/A`,`#N/A`,0,`MIN`,`GPON01-D1-MIN-2`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,`30/10/2026`],
+[220,'SBT',7,1,``,``,0,`PDJ`,`GPON01-D1-PDJ-2`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,`29/10/2026`],
+[221,'SBT',7,5,`#N/A`,`#N/A`,0,`SIG`,`GPON00-D1-SIG-2`,`#N/A`,`#N/A`,`relok batu sangkar`,3,9,`19/10/2026`,``],
+[222,'SBT',7,1,`#N/A`,`#N/A`,0,`-BS`,`GPON 01-D1-BSK-2`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,`29/10/2026`],
+[223,'SBT',7,1,``,``,0,`SIR`,`GPON01-D1-SIR-2`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,`27/10/2026`],
+[224,'SBT',7,1,`#N/A`,`#N/A`,0,`SPE`,`GPON01-D1-SPE-2`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,`28/10/2026`],
+[225,'SBT',7,5,`#N/A`,`#N/A`,0,`SUP`,`GPON00-D1-SUP-2`,`#N/A`,`#N/A`,`relok ke sungai puar`,3,9,`19/10/2026`,``],
+[226,'SBT',7,1,`#N/A`,`#N/A`,0,`SUP`,`GPON00-D1-SUP-2`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,`31/10/2026`],
+[227,'SBT',7,1,`#N/A`,`#N/A`,0,`UGD`,`GPON00-D1-UGD-2`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,`28/10/2026`],
+[228,'SBT',7,5,`#N/A`,`#N/A`,0,`LUG`,`GPON01-D1-LUG-2`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,``],
+[229,'SBT',5,1,`12926643`,`SMB-PT3-ODC-PDS-FB-250-312_2613 - 4LOP`,104,`PDS`,`GPON00-D1-PDS-2`,``,`#N/A`,``,3,9,`19/10/2026`,`28/10/2026`],
+[230,'SBT',0,1,`11990656`,`SMB-PT-ODC-SLK-FJ-KOTA SOLOK_131811`,24,`SLK`,`GPON01-D1-SLK-2`,`5. GoLive`,`NON PRIORITY`,``,3,9,`19/10/2026`,`28/10/2026`],
+[231,'SBT',7,1,`#N/A`,`#N/A`,0,`TLN`,`GPON01-D1-TLN-2`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,`28/10/2026`],
+[232,'SBT',5,1,`12895721`,`SMB PT3-TWI-FB 250_-265_2572`,40,`TWI`,`GPON00-D1-TWI-2PGT`,``,`#N/A`,``,3,9,`19/10/2026`,`27/10/2026`],
+[233,'SBT',0,5,`13070500`,`RDR JPP PT4 EXPAND RAWANG KAO`,656,`PKR`,`GPON01-D1-PKR-2LBD`,`4. Finish Instal`,`NON PRIORITY`,``,3,9,`19/10/2026`,``],
+[234,'SBT',7,5,`#N/A`,`#N/A`,0,`PBB`,`GPON11-D1-PBB-2`,`#N/A`,`#N/A`,``,3,9,`10/11/2026`,``],
+[235,'SBT',5,5,`12941798`,`SMB-JPP-PT3-ODC-BLS-FC-PESISIR S_45651`,16,`BLS`,`GPON00-D1-BLS-2KMB`,``,`#N/A`,``,3,9,`10/11/2026`,``],
+[236,'SBT',5,5,`12931688`,`SMB-JPP-PT3-ODC-SGD-FF-250-437_2944`,16,`SGD`,`GPON00-D1-SGD-2TJG`,``,`#N/A`,``,3,9,`10/11/2026`,``],
+[237,'SBU',7,1,`#N/A`,`#N/A`,0,`PBD`,`GPON02-D1-PBD-2`,`#N/A`,`#N/A`,``,3,9,`24/08/2026`,`10/09/2026`],
+[238,'SBU',7,1,`#N/A`,`#N/A`,0,`DLM`,`GPON01-D1-DLM-2`,`#N/A`,`#N/A`,``,3,9,`24/08/2026`,`08/09/2026`],
+[239,'SBU',0,1,`11014167`,`SMU-ODC-KBJ-FAE D06 CLUSTER DESA NAGALINGGA`,168,`KBJ`,`GPON00-D1-KBJ-2MRK`,`1. Persiapan`,`NON PRIORITY`,``,3,9,`24/08/2026`,`12/09/2026`],
+[240,'SBU',0,1,`12695872`,`SMU-ODC-SDK-FBE D03 DAIRI 167244`,64,`SDK`,`GPON01-D1-SDK-2`,`5. GoLive`,`NON PRIORITY`,``,3,9,`24/08/2026`,`13/09/2026`],
+[241,'SBU',7,1,`#N/A`,`#N/A`,0,`TJP`,`GPON02-D1-TJP-2`,`#N/A`,`#N/A`,``,3,9,`11/09/2026`,`16/09/2026`],
+[242,'SBU',7,1,`#N/A`,`#N/A`,0,`TJM`,`GPON06-D1-TJM-2`,`#N/A`,`#N/A`,``,3,9,`11/09/2026`,`18/09/2026`],
+[243,'SBU',1,1,`13226485`,`PT MEDIA BALAI NUSA Sibuntuon Humbahas`,0,`DLS`,`GPON01-D1-DLS-2`,``,`#N/A`,``,3,9,`11/09/2026`,`17/09/2026`],
+[244,'SBU',0,1,`11383112`,`MDN PT3 PER-FB SERDANG BEDAGAI_1186 PRORITAS TSEL`,72,`PER`,`GPON02-D1-PER-2`,`5. GoLive`,`Prio Agustus`,``,3,9,`11/09/2026`,`16/09/2026`],
+[245,'SBU',7,1,`#N/A`,`#N/A`,0,`RAP`,`GPON03-D1-RAP-2`,`#N/A`,`#N/A`,``,3,9,`11/09/2026`,`22/09/2026`],
+[246,'SBU',0,1,`12444767`,`ACH PT3 LNO-FD D03 SERBA_MD`,56,`LNO`,`GPON01-D1-LNO-2`,`5. GoLive`,`Prio Oktober 20 Branch`,``,3,9,`22/09/2026`,`30/09/2026`],
+[247,'SBU',7,1,``,`BJI111`,0,`BJI`,`GPON08-D1-BJI-2`,`#N/A`,`#N/A`,``,3,9,`22/09/2026`,`28/09/2026`],
+[248,'SBU',7,1,`#N/A`,`#N/A`,0,`PTL`,`GPON01-D1-PTL-2`,`#N/A`,`#N/A`,``,3,9,`22/09/2026`,`29/09/2026`],
+[249,'SBU',0,1,`13094572`,`MDN ODC LES PER-FT r_2500_160_177`,280,`IDA`,`GPON01-D1-IDA-2`,`5. GoLive`,`Prio Agustus`,``,3,9,`22/09/2026`,`09/10/2026`],
+[250,'SBU',7,1,`#N/A`,`#N/A`,0,`MDC`,`GPON14-D1-MDC-2`,`#N/A`,`#N/A`,``,3,9,`29/09/2026`,`12/10/2026`],
+[251,'SBU',0,1,`11511756`,`ACH PT4 BNN-FU MUTIARA TIMUR`,192,`BNN`,`GPON01-D1-BNN-2`,`4. Finish Instal`,`Prio September 20 Branch`,``,3,9,`19/10/2026`,`29/10/2026`],
+[252,'SBU',7,1,``,`SGI054`,0,`BNN`,`GPON01-D1-BNN-2LPT`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,`29/10/2026`],
+[253,'SBU',0,1,`11264085`,`ACH PT3 JRM-FG D04 KARANG ANYAR`,112,`JRM`,`GPON00-D1-JRM-2LMI`,`5. GoLive`,`Prio Oktober 20 Branch`,``,3,9,`19/10/2026`,`11/11/2026`],
+[254,'SBU',7,1,`#N/A`,`#N/A`,0,`SMM`,`GPON01-D1-SMM-2`,`#N/A`,`#N/A`,``,3,9,`19/10/2026`,`29/10/2026`],
+[255,'SBU',0,1,`12954833`,`ACH PT3 SUS-FA SIMPANG KIRI`,48,`SUS`,`GPON01-D1-SUS-2`,`5. GoLive`,`Prio Oktober 20 Branch`,``,3,9,`19/10/2026`,`10/11/2026`],
+[256,'SBU',0,1,`11891832`,`ACH PT4 GEU-FT LANCOK`,672,`GEU`,`GPON01-D1-GEU-2`,`5. GoLive`,`Prio Agustus`,``,3,9,`19/10/2026`,`30/10/2026`],
+[257,'SBU',0,5,`13049248`,`ACH PT3 SPU-FB D06 BR PAYA DEUMAM`,0,`SPU`,`GPON01-D1-SPU-2`,`5. GoLive`,`NON PRIORITY`,``,3,9,`19/10/2026`,``],
+[258,'SBU',0,1,`12945199`,`SUMUT-JPP-PT3 BRACHING-SRA-FAC-XX 213795`,72,`SRA`,`GPON01-D1-SRA-2`,`1. Persiapan`,`Prio Agustus`,``,3,9,`19/10/2026`,`12/11/2026`],
+[259,'SBU',7,5,`#N/A`,`#N/A`,0,`ANP`,`GPON01-D1-ANP-2`,`#N/A`,`#N/A`,``,3,9,`25/10/2026`,``],
+[260,'SBU',5,1,`11346186`,`PT3 JRM-FS DESA NIGAN`,40,`JRM`,`GPON01-D1-JRM-2`,``,`#N/A`,``,3,9,`10/11/2026`,`16/11/2026`],
+[261,'SBU',0,5,`12936318`,`ACH JPP PT3 LGS-FAB D03 KUALA LANGSA`,56,`LGS`,`GPON03-D1-LGS-2`,`5. GoLive`,`NON PRIORITY`,`SLOT TIDAK CUKUP`,3,9,`10/11/2026`,``],
+[262,'SBU',7,5,`#N/A`,`#N/A`,0,`TMU`,`GPON03-D1-TMU-2`,`#N/A`,`#N/A`,``,3,9,`10/11/2026`,``],
+[263,'SBU',0,5,`11287861`,`SMU GNT-FAG D04 CLUST BARUHAR JAE`,56,`GNT`,`GPON01-D1-GNT-2`,`2. Matdel`,`NON PRIORITY`,``,3,9,`10/11/2026`,``],
+[264,'SBU',7,5,`#N/A`,`#N/A`,0,`SIH`,`GPON01-D1-SIH-2`,`#N/A`,`#N/A`,``,3,9,`10/11/2026`,``],
+[265,'SBU',7,5,`#N/A`,`#N/A`,0,`KIS`,`GPON02-D1-KIS-2`,`#N/A`,`#N/A`,`SLOT CUKUP 1`,3,9,`10/11/2026`,``],
+[266,'SBU',0,5,`11020493`,`MDN PT3 P7I1 PBD-FD KOM PITURAH INDAH RESIDEN1`,48,`PBD`,`GPON00-D1-PBD-2BST`,`5. GoLive`,`NON PRIORITY`,``,3,9,`10/11/2026`,``]
+];
+
+/* ============================================================================
+   2. TRANSFORMASI & VALIDASI DATA TERPADU (DEPLOYMENT + PLANNING AUDIT)
+   ============================================================================ */
+function parseDateStr(str) {
+  if (!str) return null;
+  const parts = str.split('/');
+  if (parts.length !== 3) return null;
+  const d = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10) - 1;
+  const y = parseInt(parts[2], 10);
+  if (isNaN(d) || isNaN(m) || isNaN(y)) return null;
+  return new Date(y, m, d);
+}
+
+function isMissing(val) {
+  if (val === null || val === undefined) return true;
+  const s = String(val).trim();
+  return s === '' || s === '#N/A' || s === '-' || s === '0';
+}
+
+const ALL_RECORDS = COMPACT_ROWS.map(r => {
+  const reg = r[1];
+  const prog = PROG_MAP[r[3]] || 'LAINNYA';
+  const startDt = parseDateStr(r[14]);
+  const dueDt = parseDateStr(r[15]);
+  const isOverdue = prog !== 'ON AIR' && prog !== 'DROP SITE' && dueDt !== null && dueDt < CUTOFF_DATE;
+  const missIhld = isMissing(r[4]);
+  const missLop = isMissing(r[5]);
+  const missPort = !(r[6] > 0);
+  const missSite = isMissing(r[8]);
+  const missOsp = isMissing(r[9]);
+  const readyGoDeploy = !(missIhld || missLop || missPort || missSite || missOsp);
+
+  return {
+    no: r[0],
+    reg: reg,
+    jen: JENIS_MAP[r[2]] || '#N/A',
+    prog: prog,
+    ihld: r[4],
+    lop: r[5],
+    port: r[6] || 0,
+    sto: r[7],
+    site: r[8],
+    osp: r[9],
+    prio: r[10],
+    rem: r[11],
+    type: TYPE_MAP[r[12]] || '#N/A',
+    merk: MERK_MAP[r[13]] || '#N/A',
+    start: r[14],
+    due: r[15],
+    startDt: startDt,
+    dueDt: dueDt,
+    isOverdue: isOverdue,
+    missIhld: missIhld,
+    missLop: missLop,
+    missPort: missPort,
+    missSite: missSite,
+    missOsp: missOsp,
+    ready: readyGoDeploy
+  };
+}).filter(d => !EXCLUDED_REGIONS.has(d.reg));
+
+const PROGRESS_DISPLAY = [
+  { key: 'ON AIR', label: 'Done Integrasi / GoLive', colorVar: '--data-2' },
+  { key: 'POWER ON', label: 'Power On', colorVar: '--data-1' },
+  { key: 'INSTALASI', label: 'OGP Instalasi', colorVar: '--data-3' },
+  { key: 'MATERIAL ONSITE', label: 'Material Delivery (Onsite)', colorVar: '--data-5' },
+  { key: 'DELIVERY', label: 'Material Delivery', colorVar: '--data-7' },
+  { key: 'DONE SURVEY', label: 'Survey ISP', colorVar: '--data-4' },
+  { key: 'AANWIJZING', label: 'Aanwijzing', colorVar: '--data-6' },
+  { key: 'DROP SITE', label: 'Drop Site', colorVar: '--data-8' }
+];
+
+const FILTER_DEFS = [
+  { key: 'reg', label: 'Region', open: true },
+  { key: 'jen', label: 'Jenis Project', open: true },
+  { key: 'prog', label: 'Progress ISP', open: false },
+  { key: 'type', label: 'Type Req', open: false },
+  { key: 'prio', label: 'Prioritas', open: false },
+  { key: 'merk', label: 'Merk OLT / Vendor', open: false }
+];
+
+const appState = {
+  theme: 'dark',
+  module: 'deployment',
+  filters: { reg: [], jen: [], prog: [], type: [], prio: [], merk: [] },
+  dep: { search: '', quick: 'ALL', sortKey: 'no', sortDir: 'asc', page: 1, pageSize: 12 },
+  plan: { search: '', quick: 'ALL', sortKey: 'no', sortDir: 'asc', page: 1, pageSize: 12 }
+};
+
+let chartSCurve = null;
+let chartDepDonut = null;
+let chartRegionSub = {};
+let chartPlanDonut = null;
+let chartPlanRegion = null;
+
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function escapeHtml(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function showToast(msg) {
+  const banner = document.getElementById('toastBanner');
+  const txt = document.getElementById('toastText');
+  if (!banner || !txt) return;
+  txt.textContent = msg;
+  banner.classList.add('show');
+  setTimeout(() => banner.classList.remove('show'), 3200);
+}
+
+/* ============================================================================
+   3. SIDEBAR CHECKLIST & CROSS-FILTERING
+   ============================================================================ */
+function buildChecklistSidebar() {
+  const container = document.getElementById('checklistContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  FILTER_DEFS.forEach(def => {
+    const counts = {};
+    ALL_RECORDS.forEach(r => {
+      const val = r[def.key] || '#N/A';
+      if (def.key === 'reg' && EXCLUDED_REGIONS.has(val)) return;
+      counts[val] = (counts[val] || 0) + 1;
+    });
+    const keys = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+
+    const details = document.createElement('details');
+    details.className = 'filter-details';
+    if (def.open) details.open = true;
+
+    const selected = appState.filters[def.key] || [];
+    const summary = document.createElement('summary');
+    summary.className = 'filter-summary';
+    summary.innerHTML = `<span>${escapeHtml(def.label)}</span><span class="filter-count-badge" id="badge-${def.key}">${selected.length > 0 ? selected.length + ' dipilih' : 'Semua (' + keys.length + ')'}</span>`;
+
+    const body = document.createElement('div');
+    body.className = 'checklist-body';
+    keys.forEach(k => {
+      const lbl = document.createElement('label');
+      lbl.className = 'chk-row';
+      const checked = selected.includes(k) ? 'checked' : '';
+      lbl.innerHTML = `<span class="chk-left"><input type="checkbox" value="${escapeHtml(k)}" data-fkey="${def.key}" ${checked} onchange="onChecklistToggle(this)"><span class="chk-text" title="${escapeHtml(k)}">${escapeHtml(k)}</span></span><span class="chk-num">${counts[k]}</span>`;
+      body.appendChild(lbl);
+    });
+
+    details.appendChild(summary);
+    details.appendChild(body);
+    container.appendChild(details);
+  });
+}
+
+function onChecklistToggle(cb) {
+  const fkey = cb.dataset.fkey;
+  const val = cb.value;
+  if (!appState.filters[fkey]) appState.filters[fkey] = [];
+  if (cb.checked) {
+    if (!appState.filters[fkey].includes(val)) appState.filters[fkey].push(val);
+  } else {
+    appState.filters[fkey] = appState.filters[fkey].filter(x => x !== val);
+  }
+  appState.dep.page = 1;
+  appState.plan.page = 1;
+  updateFilterBadges();
+  renderAll();
+  saveState();
+}
+
+function updateFilterBadges() {
+  let activeCount = 0;
+  FILTER_DEFS.forEach(def => {
+    const sel = appState.filters[def.key] || [];
+    if (sel.length > 0) activeCount += sel.length;
+    const badge = document.getElementById('badge-' + def.key);
+    if (badge) {
+      badge.textContent = sel.length > 0 ? `${sel.length} dipilih` : 'Semua';
+    }
+  });
+  const lbl = document.getElementById('activeFilterLabel');
+  if (lbl) lbl.textContent = `${activeCount} filter checklist aktif`;
+}
+
+function resetAllFilters() {
+  Object.keys(appState.filters).forEach(k => { appState.filters[k] = []; });
+  appState.dep.search = '';
+  appState.dep.quick = 'ALL';
+  appState.dep.page = 1;
+  appState.plan.search = '';
+  appState.plan.quick = 'ALL';
+  appState.plan.page = 1;
+  const ds = document.getElementById('depSearchInput');
+  if (ds) ds.value = '';
+  const ps = document.getElementById('planSearchInput');
+  if (ps) ps.value = '';
+  document.querySelectorAll('.quick-chip').forEach(c => c.classList.toggle('active', c.dataset.q === 'ALL'));
+  buildChecklistSidebar();
+  updateFilterBadges();
+  renderAll();
+  saveState();
+  showToast('Semua filter di-reset ke tampilan penuh DATA BASE ISP');
+}
+
+function getSidebarFilteredRows() {
+  return ALL_RECORDS.filter(r => {
+    if (EXCLUDED_REGIONS.has(r.reg)) return false;
+    for (const def of FILTER_DEFS) {
+      const sel = appState.filters[def.key];
+      if (sel && sel.length > 0 && !sel.includes(r[def.key])) return false;
+    }
+    return true;
+  });
+}
+
+/* ============================================================================
+   4. NAVIGASI MODUL & THEME SWITCHER
+   ============================================================================ */
+function switchModule(mod) {
+  appState.module = mod;
+  const vDep = document.getElementById('view-deployment');
+  const vPlan = document.getElementById('view-planning');
+  const nDep = document.getElementById('nav-deployment');
+  const nPlan = document.getElementById('nav-planning');
+  if (vDep) vDep.classList.toggle('hidden-view', mod !== 'deployment');
+  if (vPlan) vPlan.classList.toggle('hidden-view', mod !== 'planning');
+  if (nDep) nDep.classList.toggle('active', mod === 'deployment');
+  if (nPlan) nPlan.classList.toggle('active', mod === 'planning');
+  renderAll();
+  saveState();
+}
+
+function toggleTheme() {
+  appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
+  applyTheme();
+  renderAll();
+  saveState();
+}
+
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', appState.theme);
+  const lbl = document.getElementById('themeLabel');
+  if (lbl) lbl.textContent = appState.theme === 'dark' ? 'Mode Terang' : 'Mode Gelap';
+  const icon = document.getElementById('themeIcon');
+  if (icon) icon.setAttribute('data-lucide', appState.theme === 'dark' ? 'sun' : 'moon');
+  if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+}
+
+function toggleMobileSidebar() {
+  const sb = document.getElementById('sidebarPanel');
+  const btn = document.getElementById('mobileFilterBtn');
+  if (!sb || !btn) return;
+  const isOpen = sb.classList.toggle('mobile-open');
+  btn.setAttribute('aria-expanded', String(isOpen));
+}
+
+function onSearchChange(mod) {
+  const inp = document.getElementById(mod === 'dep' ? 'depSearchInput' : 'planSearchInput');
+  appState[mod].search = inp ? inp.value.trim().toLowerCase() : '';
+  appState[mod].page = 1;
+  renderTable(mod);
+}
+
+function setQuickChip(mod, q, el) {
+  appState[mod].quick = q;
+  appState[mod].page = 1;
+  const parent = el.parentElement;
+  if (parent) parent.querySelectorAll('.quick-chip').forEach(btn => btn.classList.remove('active'));
+  el.classList.add('active');
+  renderTable(mod);
+}
+
+function sortTable(mod, key) {
+  if (appState[mod].sortKey === key) {
+    appState[mod].sortDir = appState[mod].sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    appState[mod].sortKey = key;
+    appState[mod].sortDir = 'asc';
+  }
+  renderTable(mod);
+}
+
+function changePage(mod, delta) {
+  appState[mod].page += delta;
+  renderTable(mod);
+}
+
+function filterByProgressFromLegend(progKey) {
+  const cur = appState.filters.prog || [];
+  if (cur.length === 1 && cur[0] === progKey) {
+    appState.filters.prog = [];
+  } else {
+    appState.filters.prog = [progKey];
+  }
+  buildChecklistSidebar();
+  updateFilterBadges();
+  renderAll();
+  saveState();
+}
+
+/* ============================================================================
+   5. RENDER ENGINE: DEPLOYMENT & PLANNING MODULES
+   ============================================================================ */
+function renderAll() {
+  const baseRows = getSidebarFilteredRows();
+  const navDep = document.getElementById('navCountDep');
+  if (navDep) navDep.textContent = baseRows.length;
+  const ratio = baseRows.length / ALL_RECORDS.length;
+  const scaledPlan = Math.round(PLANNING_TARGET_TOTAL * ratio);
+  const navPlan = document.getElementById('navCountPlan');
+  if (navPlan) navPlan.textContent = scaledPlan;
+
+  if (appState.module === 'deployment') {
+    renderDeploymentModule(baseRows);
+  } else {
+    renderPlanningModule(baseRows, scaledPlan);
+  }
+}
+
+function renderDeploymentModule(rows) {
+  const totalNode = rows.length;
+  const uniqueSites = new Set(rows.map(r => (r.site && r.site !== '#N/A') ? r.site : ('NODE-' + r.no))).size;
+  const overdue = rows.filter(r => r.isOverdue).length;
+  const totalPort = rows.reduce((s, r) => s + (r.port || 0), 0);
+  const onAir = rows.filter(r => r.prog === 'ON AIR').length;
+  const drop = rows.filter(r => r.prog === 'DROP SITE').length;
+  const openLop = rows.filter(r => r.prog !== 'ON AIR' && r.prog !== 'DROP SITE').length;
+
+  setText('dep-node', totalNode);
+  setText('dep-unique-site', `${uniqueSites} Unique Site`);
+  setText('dep-overdue', overdue);
+  setText('dep-overdue-pct', `${openLop ? Math.round((overdue / openLop) * 100) : 0}% dr Open`);
+  setText('dep-port', totalPort.toLocaleString('id-ID'));
+  setText('dep-port-avg', `Rata² ${totalNode ? Math.round(totalPort / totalNode) : 0}/node`);
+  setText('dep-onair', onAir);
+  setText('dep-onair-pct', `${totalNode ? ((onAir / totalNode) * 100).toFixed(1) : 0}%`);
+  setText('dep-open', openLop);
+  setText('dep-open-pct', `${totalNode ? ((openLop / totalNode) * 100).toFixed(1) : 0}%`);
+  setText('dep-drop', drop);
+  setText('dep-drop-pct', `${totalNode ? ((drop / totalNode) * 100).toFixed(1) : 0}%`);
+
+  renderSCurveChart(rows);
+  renderDepDonutChart(rows);
+  renderRegionSubCharts(rows);
+  renderTable('dep');
+}
+
+function renderSCurveChart(rows) {
+  const ctxEl = document.getElementById('chartSCurve');
+  if (!ctxEl || typeof Chart === 'undefined') return;
+  const months = ['Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  const monthIdx = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+  const cumStart = [];
+  const cumDue = [];
+  const cumOnTime = [];
+  const cumOvertime = [];
+
+  let sSum = 0, dSum = 0, otSum = 0, ovSum = 0;
+  monthIdx.forEach(m => {
+    rows.forEach(r => {
+      if (r.startDt && r.startDt.getMonth() === m) sSum++;
+      if (r.dueDt && r.dueDt.getMonth() === m) {
+        dSum++;
+        if (r.prog === 'ON AIR' || !r.isOverdue) otSum++;
+        if (r.isOverdue) ovSum++;
+      }
+    });
+    cumStart.push(sSum);
+    cumDue.push(dSum);
+    cumOnTime.push(otSum);
+    cumOvertime.push(ovSum);
+  });
+
+  if (chartSCurve) chartSCurve.destroy();
+  const c1 = cssVar('--data-1');
+  const c2 = cssVar('--data-2');
+  const c3 = cssVar('--data-3');
+  const c8 = cssVar('--data-8');
+  const txt = cssVar('--on-surface-variant');
+  const grid = cssVar('--outline-variant');
+
+  chartSCurve = new Chart(ctxEl, {
+    type: 'line',
+    data: {
+      labels: months.map(m => m + ' 26'),
+      datasets: [
+        { label: 'Akumulasi Start Project', data: cumStart, borderColor: c1, backgroundColor: c1 + '22', borderWidth: 2.5, fill: true, tension: 0.3 },
+        { label: 'Target Due Date', data: cumDue, borderColor: c3, borderDash: [5, 4], borderWidth: 2, tension: 0.3, fill: false },
+        { label: 'On-Time Progress', data: cumOnTime, borderColor: c2, borderWidth: 2.5, tension: 0.3, fill: false },
+        { label: 'Overtime / Overdue', data: cumOvertime, borderColor: c8, borderWidth: 2, tension: 0.3, fill: false }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', labels: { color: txt, boxWidth: 12, font: { family: 'Geist Mono', size: 11 } } } },
+      scales: {
+        x: { ticks: { color: txt, font: { family: 'Geist Mono', size: 10 } }, grid: { color: grid } },
+        y: { beginAtZero: true, ticks: { color: txt, font: { family: 'Geist Mono', size: 10 } }, grid: { color: grid } }
+      }
+    }
+  });
+}
+
+function renderDepDonutChart(rows) {
+  const ctxEl = document.getElementById('chartDepDonut');
+  const legendEl = document.getElementById('depDonutLegend');
+  setText('depDonutTotal', rows.length);
+  if (!ctxEl || !legendEl || typeof Chart === 'undefined') return;
+
+  const counts = PROGRESS_DISPLAY.map(p => ({
+    ...p,
+    count: rows.filter(r => r.prog === p.key).length,
+    color: cssVar(p.colorVar)
+  }));
+
+  if (chartDepDonut) chartDepDonut.destroy();
+  chartDepDonut = new Chart(ctxEl, {
+    type: 'doughnut',
+    data: {
+      labels: counts.map(c => c.label),
+      datasets: [{
+        data: counts.map(c => c.count),
+        backgroundColor: counts.map(c => c.color),
+        borderWidth: 1.5,
+        borderColor: cssVar('--surface-container-low')
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '66%',
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  legendEl.innerHTML = '';
+  counts.forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.onclick = () => filterByProgressFromLegend(c.key);
+    item.innerHTML = `<span class="legend-left"><span class="legend-dot" style="background:${c.color};"></span><span>${escapeHtml(c.label)}</span></span><span class="legend-val">${c.count}</span>`;
+    legendEl.appendChild(item);
+  });
+}
+
+function renderRegionSubCharts(rows) {
+  const grid = document.getElementById('regionSubgrid');
+  if (!grid || typeof Chart === 'undefined') return;
+  Object.values(chartRegionSub).forEach(ch => { if (ch) ch.destroy(); });
+  chartRegionSub = {};
+  grid.innerHTML = '';
+
+  const regions = ['SBU', 'SBT', 'SBS'].filter(r => !EXCLUDED_REGIONS.has(r));
+  const txt = cssVar('--on-surface-variant');
+  const gridC = cssVar('--outline-variant');
+
+  regions.forEach(reg => {
+    const rRows = rows.filter(x => x.reg === reg);
+    const onAir = rRows.filter(x => x.prog === 'ON AIR').length;
+    const overdue = rRows.filter(x => x.isOverdue).length;
+
+    const card = document.createElement('div');
+    card.className = 'region-subcard';
+    card.innerHTML = `
+      <div class="region-subhead">
+        <span class="region-code">Region ${reg}</span>
+        <span class="panel-badge">${rRows.length} Node</span>
+      </div>
+      <div class="region-submetrics">
+        <span>On Air: <strong style="color:var(--tertiary);">${onAir}</strong></span>
+        <span>Overdue: <strong style="color:var(--error);">${overdue}</strong></span>
+        <span>Port: <strong>${rRows.reduce((s, x) => s + x.port, 0).toLocaleString('id-ID')}</strong></span>
+      </div>
+      <div class="chart-box-sm"><canvas id="chartReg-${reg}"></canvas></div>
+    `;
+    grid.appendChild(card);
+
+    const canvas = document.getElementById('chartReg-' + reg);
+    const shortCats = PROGRESS_DISPLAY.filter(p => rRows.some(x => x.prog === p.key) || ['ON AIR', 'POWER ON', 'AANWIJZING', 'DONE SURVEY'].includes(p.key));
+    chartRegionSub[reg] = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: shortCats.map(p => p.label.replace('Material Delivery (Onsite)', 'Mat. Onsite').replace('Done Integrasi / GoLive', 'GoLive')),
+        datasets: [{
+          data: shortCats.map(p => rRows.filter(x => x.prog === p.key).length),
+          backgroundColor: shortCats.map(p => cssVar(p.colorVar)),
+          borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { beginAtZero: true, ticks: { color: txt, font: { family: 'Geist Mono', size: 10 } }, grid: { color: gridC } },
+          y: { ticks: { color: txt, font: { family: 'Geist Mono', size: 10 } }, grid: { display: false } }
+        }
+      }
+    });
+  });
+}
+
+function renderPlanningModule(rows, scaledTotal) {
+  const n = rows.length || 1;
+  const readyCountRaw = rows.filter(r => r.ready).length;
+  const holdRaw = rows.filter(r => r.prog === 'DROP SITE' || (r.rem && r.rem.toLowerCase().includes('pending'))).length;
+
+  const readyRatio = readyCountRaw / n;
+  const holdRatio = holdRaw / n;
+  const totalPlanLop = scaledTotal;
+  const readyPlan = Math.round(totalPlanLop * readyRatio);
+  const incompletePlan = Math.max(0, totalPlanLop - readyPlan);
+  const holdPlan = Math.round(totalPlanLop * holdRatio);
+  const readinessPct = totalPlanLop ? ((readyPlan / totalPlanLop) * 100).toFixed(1) : '0.0';
+
+  const filledPortRows = rows.filter(r => !r.missPort);
+  const sumPortRaw = rows.reduce((s, r) => s + r.port, 0);
+  const avgPort = filledPortRows.length ? Math.round(sumPortRaw / filledPortRows.length) : 160;
+  const scaledPortPlan = Math.round(sumPortRaw * (totalPlanLop / n));
+
+  setText('plan-total', totalPlanLop.toLocaleString('id-ID'));
+  setText('plan-port', scaledPortPlan.toLocaleString('id-ID'));
+  setText('plan-port-filled', `Rata² ${avgPort} port/site`);
+  setText('plan-ready', readyPlan.toLocaleString('id-ID'));
+  setText('plan-incomplete', incompletePlan.toLocaleString('id-ID'));
+  setText('plan-readiness-pct', readinessPct + '%');
+  setText('plan-hold', holdPlan.toLocaleString('id-ID'));
+  setText('plan-hold-pct', `${totalPlanLop ? ((holdPlan / totalPlanLop) * 100).toFixed(1) : 0}%`);
+
+  renderPlanDonut(readyPlan, incompletePlan, readinessPct);
+  renderPlanGapCard(rows);
+  renderPlanRegionChart(rows);
+  renderTable('plan');
+}
+
+function renderPlanDonut(ready, incomplete, pctStr) {
+  const ctxEl = document.getElementById('chartPlanDonut');
+  const legendEl = document.getElementById('planDonutLegend');
+  setText('planDonutVal', pctStr + '%');
+  if (!ctxEl || !legendEl || typeof Chart === 'undefined') return;
+  const cReady = cssVar('--data-2');
+  const cInc = cssVar('--data-3');
+  if (chartPlanDonut) chartPlanDonut.destroy();
+  chartPlanDonut = new Chart(ctxEl, {
+    type: 'doughnut',
+    data: {
+      labels: ['Lengkap (Ready Go Deploy)', 'Belum Lengkap (Incomplete)'],
+      datasets: [{ data: [ready, incomplete], backgroundColor: [cReady, cInc], borderWidth: 1.5, borderColor: cssVar('--surface-container-low') }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false } } }
+  });
+  legendEl.innerHTML = `
+    <div class="legend-item"><span class="legend-left"><span class="legend-dot" style="background:${cReady};"></span><span>Lengkap (Ready Go Deploy)</span></span><span class="legend-val">${ready} LOP</span></div>
+    <div class="legend-item"><span class="legend-left"><span class="legend-dot" style="background:${cInc};"></span><span>Belum Lengkap (Incomplete)</span></span><span class="legend-val">${incomplete} LOP</span></div>
+  `;
+}
+
+function renderPlanGapCard(rows) {
+  const el = document.getElementById('planGapList');
+  if (!el) return;
+  const total = rows.length || 1;
+  const params = [
+    { label: '1. IHLD Kosong / #N/A', count: rows.filter(r => r.missIhld).length },
+    { label: '2. Nama LOP Kosong / #N/A', count: rows.filter(r => r.missLop).length },
+    { label: '3. Jumlah Port Kosong (0)', count: rows.filter(r => r.missPort).length },
+    { label: '4. SITE ID / Hostname Kosong', count: rows.filter(r => r.missSite).length },
+    { label: '5. STATUS OSP Kosong / #N/A', count: rows.filter(r => r.missOsp).length }
+  ];
+  el.innerHTML = '';
+  params.forEach(p => {
+    const pct = Math.round((p.count / total) * 100);
+    const row = document.createElement('div');
+    row.className = 'gap-row';
+    row.innerHTML = `
+      <div class="gap-row-top">
+        <span>${escapeHtml(p.label)}</span>
+        <span style="font-family:var(--font-label);color:var(--error);">${p.count} / ${rows.length} (${pct}%)</span>
+      </div>
+      <div class="gap-track"><div class="gap-fill" style="width:${pct}%;"></div></div>
+    `;
+    el.appendChild(row);
+  });
+}
+
+function renderPlanRegionChart(rows) {
+  const ctxEl = document.getElementById('chartPlanRegion');
+  if (!ctxEl || typeof Chart === 'undefined') return;
+  const regs = ['SBU', 'SBT', 'SBS'].filter(r => !EXCLUDED_REGIONS.has(r));
+  const readyData = regs.map(reg => rows.filter(r => r.reg === reg && r.ready).length);
+  const incData = regs.map(reg => rows.filter(r => r.reg === reg && !r.ready).length);
+
+  if (chartPlanRegion) chartPlanRegion.destroy();
+  const txt = cssVar('--on-surface-variant');
+  const grid = cssVar('--outline-variant');
+  chartPlanRegion = new Chart(ctxEl, {
+    type: 'bar',
+    data: {
+      labels: regs,
+      datasets: [
+        { label: 'Lengkap Go Deploy', data: readyData, backgroundColor: cssVar('--data-2'), borderRadius: 4 },
+        { label: 'Belum Lengkap', data: incData, backgroundColor: cssVar('--data-3'), borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', labels: { color: txt, boxWidth: 12, font: { family: 'Geist Mono', size: 11 } } } },
+      scales: {
+        x: { stacked: true, ticks: { color: txt, font: { family: 'Geist Mono', size: 11 } }, grid: { display: false } },
+        y: { stacked: true, beginAtZero: true, ticks: { color: txt, font: { family: 'Geist Mono', size: 10 } }, grid: { color: grid } }
+      }
+    }
+  });
+}
+
+/* ============================================================================
+   6. RENDER TABEL DATABASE LOP & DETAIL INSPECTOR
+   ============================================================================ */
+function renderTable(mod) {
+  const state = appState[mod];
+  let rows = getSidebarFilteredRows();
+  if (mod === 'dep') {
+    if (state.quick === 'OVERDUE') rows = rows.filter(r => r.isOverdue);
+    else if (state.quick !== 'ALL') rows = rows.filter(r => r.prog === state.quick);
+  } else {
+    if (state.quick === 'READY') rows = rows.filter(r => r.ready);
+    else if (state.quick === 'INCOMPLETE') rows = rows.filter(r => !r.ready);
+    else if (state.quick === 'HOLD') rows = rows.filter(r => r.prog === 'DROP SITE' || (r.rem && r.rem.toLowerCase().includes('pending')));
+  }
+
+  if (state.search) {
+    const q = state.search;
+    rows = rows.filter(r =>
+      String(r.ihld).toLowerCase().includes(q) ||
+      String(r.lop).toLowerCase().includes(q) ||
+      String(r.site).toLowerCase().includes(q) ||
+      String(r.sto).toLowerCase().includes(q) ||
+      String(r.osp).toLowerCase().includes(q) ||
+      String(r.rem).toLowerCase().includes(q)
+    );
+  }
+
+  rows.sort((a, b) => {
+    let va = a[state.sortKey];
+    let vb = b[state.sortKey];
+    if (state.sortKey === 'no' || state.sortKey === 'port') {
+      va = Number(va) || 0;
+      vb = Number(vb) || 0;
+    } else if (state.sortKey === 'ready') {
+      va = va ? 1 : 0;
+      vb = vb ? 1 : 0;
+    } else {
+      va = String(va || '').toLowerCase();
+      vb = String(vb || '').toLowerCase();
+    }
+    if (va < vb) return state.sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return state.sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const total = rows.length;
+  const maxPage = Math.max(1, Math.ceil(total / state.pageSize));
+  if (state.page > maxPage) state.page = maxPage;
+  if (state.page < 1) state.page = 1;
+
+  const startIdx = (state.page - 1) * state.pageSize;
+  const slice = rows.slice(startIdx, startIdx + state.pageSize);
+
+  const badge = document.getElementById(mod === 'dep' ? 'depTableBadge' : 'planTableBadge');
+  if (badge) badge.textContent = `${total} baris`;
+
+  const tbody = document.getElementById(mod === 'dep' ? 'depTableBody' : 'planTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  if (slice.length === 0) {
+    const colSpan = mod === 'dep' ? 16 : 11;
+    tbody.innerHTML = `<tr><td colspan="${colSpan}" class="empty-state">Tidak ada data LOP yang sesuai dengan filter. Klik <strong>Reset Filter</strong> di sidebar untuk menampilkan semua data.</td></tr>`;
+  } else if (mod === 'dep') {
+    slice.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.onclick = () => showDepDetail(r);
+      const stCls = r.prog === 'ON AIR' ? 'st-onair' : r.prog === 'POWER ON' ? 'st-power' : r.prog === 'DROP SITE' ? 'st-drop' : (r.prog === 'INSTALASI' || r.prog === 'AANWIJZING') ? 'st-inst' : 'st-default';
+      tr.innerHTML = `
+        <td class="td-mono">${r.no}</td>
+        <td class="td-mono">${escapeHtml(r.reg)}</td>
+        <td>${escapeHtml(r.jen)}</td>
+        <td><span class="status-badge ${stCls}">${escapeHtml(r.prog)}</span></td>
+        <td class="td-mono">${escapeHtml(r.ihld || '—')}</td>
+        <td class="td-lop">${escapeHtml(r.lop || '—')}</td>
+        <td class="td-mono">${r.port || '—'}</td>
+        <td class="td-mono">${escapeHtml(r.sto)}</td>
+        <td class="td-mono">${escapeHtml(r.site || '—')}</td>
+        <td>${escapeHtml(r.osp || '—')}</td>
+        <td>${escapeHtml(r.prio)}</td>
+        <td>${escapeHtml(r.type)}</td>
+        <td class="td-mono">${escapeHtml(r.merk)}</td>
+        <td class="td-mono">${escapeHtml(r.start || '—')}</td>
+        <td class="td-mono">${r.isOverdue ? '<span style="color:var(--error);font-weight:700;">' + escapeHtml(r.due) + '</span>' : escapeHtml(r.due || '—')}</td>
+        <td><div class="td-remarks" title="${escapeHtml(r.rem)}">${escapeHtml(r.rem || '—')}</div></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } else {
+    slice.forEach(r => {
+      const tr = document.createElement('tr');
+      const f = (miss, lbl) => `<span class="${miss ? 'flag-miss' : 'flag-ok'}">${miss ? '✗' : '✓'} ${lbl}</span>`;
+      tr.innerHTML = `
+        <td class="td-mono">${r.no}</td>
+        <td class="td-mono">${escapeHtml(r.reg)}</td>
+        <td>${escapeHtml(r.jen)}</td>
+        <td class="td-mono">${r.missIhld ? '<span class="flag-miss">Kosong</span>' : escapeHtml(r.ihld)}</td>
+        <td class="td-lop">${r.missLop ? '<span class="flag-miss">Kosong</span>' : escapeHtml(r.lop)}</td>
+        <td class="td-mono">${r.missPort ? '<span class="flag-miss">0</span>' : r.port}</td>
+        <td class="td-mono">${r.missSite ? '<span class="flag-miss">Kosong</span>' : escapeHtml(r.site)}</td>
+        <td>${r.missOsp ? '<span class="flag-miss">Kosong</span>' : escapeHtml(r.osp)}</td>
+        <td>${escapeHtml(r.prio)}</td>
+        <td style="white-space:nowrap;font-size:0.74rem;">${f(r.missIhld,'IHLD')} · ${f(r.missLop,'LOP')} · ${f(r.missPort,'Port')} · ${f(r.missSite,'Site')} · ${f(r.missOsp,'OSP')}</td>
+        <td><span class="status-badge ${r.ready ? 'st-onair' : 'st-inst'}">${r.ready ? 'Ready Go Deploy' : 'Incomplete'}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  const pInfo = document.getElementById(mod === 'dep' ? 'depPageInfo' : 'planPageInfo');
+  const pLbl = document.getElementById(mod === 'dep' ? 'depPageLbl' : 'planPageLbl');
+  const prevBtn = document.getElementById(mod === 'dep' ? 'depPrev' : 'planPrev');
+  const nextBtn = document.getElementById(mod === 'dep' ? 'depNext' : 'planNext');
+  if (pInfo) pInfo.textContent = total ? `Menampilkan ${startIdx + 1}–${Math.min(total, startIdx + state.pageSize)} dari ${total} data` : '0 data ditemukan';
+  if (pLbl) pLbl.textContent = `Hal ${state.page} / ${maxPage}`;
+  if (prevBtn) prevBtn.disabled = state.page <= 1;
+  if (nextBtn) nextBtn.disabled = state.page >= maxPage;
+}
+
+function showDepDetail(r) {
+  const box = document.getElementById('depDetailBox');
+  const title = document.getElementById('depDetailTitle');
+  const grid = document.getElementById('depDetailGrid');
+  const rem = document.getElementById('depDetailRemarks');
+  if (!box || !title || !grid || !rem) return;
+  title.textContent = `#${r.no} · ${r.lop || r.site || 'Detail LOP'}`;
+  const fields = [
+    ['Region', r.reg], ['Jenis Project', r.jen], ['Progress ISP', r.prog],
+    ['IHLD', r.ihld || '—'], ['Site ID', r.site || '—'], ['STO', r.sto],
+    ['Port Value', r.port || '—'], ['Status OSP', r.osp || '—'], ['Prioritas', r.prio],
+    ['Type Req', r.type], ['Merk OLT', r.merk], ['Start / Due', `${r.start || '—'} → ${r.due || '—'}`]
+  ];
+  grid.innerHTML = fields.map(([k, v]) => `<div><div class="detail-kv-lbl">${escapeHtml(k)}</div><div class="detail-kv-val">${escapeHtml(v)}</div></div>`).join('');
+  rem.textContent = r.rem || 'Tidak ada catatan lapangan.';
+  box.classList.add('open');
+}
+
+function closeDetail(mod) {
+  const box = document.getElementById(mod === 'dep' ? 'depDetailBox' : 'planDetailBox');
+  if (box) box.classList.remove('open');
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+/* ============================================================================
+   7. EKSPOR CSV, MODAL SYNC 1 SUMBER NOTEBOOK & AI ANALIS ISP
+   ============================================================================ */
+function exportCsvData() {
+  const rows = getSidebarFilteredRows();
+  const header = ['NO','REGION','JENIS PROJECT','PROGRESS ISP','IHLD','LOP NAME','PORT VALUE','STO','SITE ID','STATUS OSP','PRIORITAS','TYPE REQ','MERK OLT','START DATE','DUE DATE','REMARKS'];
+  const lines = [header.join(',')];
+  rows.forEach(r => {
+    const vals = [r.no, r.reg, r.jen, r.prog, r.ihld, r.lop, r.port, r.sto, r.site, r.osp, r.prio, r.type, r.merk, r.start, r.due, r.rem];
+    lines.push(vals.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(','));
+  });
+  const csv = lines.join('\n');
+
+  if (window.notebookAppApi && typeof window.notebookAppApi.triggerFileDownload === 'function') {
+    window.notebookAppApi.triggerFileDownload({
+      content: csv,
+      contentType: 'text/csv',
+      encoding: 'UTF-8',
+      filename: 'monitoring_project_isp.csv'
+    });
+  } else {
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'monitoring_project_isp.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+  showToast(`Berhasil mengekspor ${rows.length} baris ke CSV`);
+}
+
+function openSyncModal() {
+  const m = document.getElementById('syncModal');
+  if (m) m.classList.add('open');
+  if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+}
+
+function closeSyncModal() {
+  const m = document.getElementById('syncModal');
+  if (m) m.classList.remove('open');
+}
+
+function triggerNotebookResync() {
+  const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  setText('lastSyncTimestamp', `Tersinkronisasi (${now} WIB)`);
+  renderAll();
+  closeSyncModal();
+  showToast(`Re-sync 1 sumber DATA BASE ISP selesai (${ALL_RECORDS.length} node aktif)`);
+}
+
+function openAiModal() {
+  const m = document.getElementById('aiModal');
+  if (m) m.classList.add('open');
+  const inp = document.getElementById('aiPromptInput');
+  if (inp) inp.focus();
+}
+
+function closeAiModal() {
+  const m = document.getElementById('aiModal');
+  if (m) m.classList.remove('open');
+}
+
+function askPresetAi(q) {
+  const inp = document.getElementById('aiPromptInput');
+  if (inp) inp.value = q;
+  handleAiSubmit(new Event('submit'));
+}
+
+function appendAiMessage(role, text) {
+  const box = document.getElementById('aiChatHistory');
+  if (!box) return;
+  const div = document.createElement('div');
+  div.className = `ai-msg ${role}`;
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function buildLocalDataInsight(question) {
+  const q = question.toLowerCase();
+  const rows = getSidebarFilteredRows();
+
+  // Cek apakah pengguna mencari nama LOP / IHLD / Site ID / STO spesifik
+  const keywords = q.replace(/cek|status|bagaimana|info|data|site|lop|untuk|di|per|region/gi, '').trim().split(/\s+/).filter(w => w.length >= 3);
+  if (keywords.length > 0) {
+    const matched = ALL_RECORDS.filter(r =>
+      keywords.some(kw =>
+        String(r.lop).toLowerCase().includes(kw) ||
+        String(r.ihld).toLowerCase().includes(kw) ||
+        String(r.site).toLowerCase().includes(kw) ||
+        String(r.sto).toLowerCase().includes(kw)
+      )
+    );
+    if (matched.length > 0 && matched.length <= 8) {
+      return `Ditemukan ${matched.length} entri pada DATA BASE ISP:\n` +
+        matched.map(m =>
+          `• #${m.no} [${m.reg}] ${m.lop || m.site} (IHLD: ${m.ihld || '-'}, Site: ${m.site || '-'}, STO: ${m.sto}) → Progress ISP: ${m.prog} | Status OSP: ${m.osp || '-'} | Port: ${m.port} | Due: ${m.due || '-'} | Remarks: ${m.rem || '-'}`
+        ).join('\n');
+    }
+  }
+
+  // Ringkasan KPI Regional / Overdue / Planning
+  const byReg = ['SBU', 'SBT', 'SBS'].map(reg => {
+    const sub = rows.filter(r => r.reg === reg);
+    const oa = sub.filter(r => r.prog === 'ON AIR').length;
+    const ov = sub.filter(r => r.isOverdue).length;
+    const rdy = sub.filter(r => r.ready).length;
+    return `• Region ${reg}: ${sub.length} Node | On Air: ${oa} | Overdue: ${ov} | Ready Go-Deploy: ${rdy}`;
+  }).join('\n');
+
+  const missIhld = rows.filter(r => r.missIhld).length;
+  const missLop = rows.filter(r => r.missLop).length;
+  const missPort = rows.filter(r => r.missPort).length;
+  const missOsp = rows.filter(r => r.missOsp).length;
+
+  return `Ringkasan Analisa DATA BASE ISP (${rows.length} Node Aktif):\n${byReg}\n\nAudit Gap Parameter Planning:\n• IHLD Kosong/#N/A: ${missIhld} | Nama LOP Kosong: ${missLop} | Port 0: ${missPort} | Status OSP Kosong: ${missOsp}`;
+}
+
+async function handleAiSubmit(e) {
+  e.preventDefault();
+  const inp = document.getElementById('aiPromptInput');
+  const btn = document.getElementById('aiSendBtn');
+  if (!inp || !inp.value.trim()) return;
+  const userQ = inp.value.trim();
+  inp.value = '';
+  appendAiMessage('user', userQ);
+  if (btn) btn.disabled = true;
+
+  const localSummary = buildLocalDataInsight(userQ);
+  const apiKey = "";
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+  try {
+    const payload = {
+      contents: [{
+        parts: [{
+          text: `Konteks Data Terfilter dari DATA BASE ISP (Cutoff 20 Nov 2026):\n${localSummary}\n\nPertanyaan User: ${userQ}`
+        }]
+      }],
+      systemInstruction: {
+        parts: [{
+          text: "Anda adalah AI Analis Data Project ISP (OLT/Mini OLT). Jawab singkat, padat, akurat dalam Bahasa Indonesia berdasarkan data yang diberikan."
+        }]
+      }
+    };
+
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('API fallback');
+    const data = await res.json();
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || localSummary;
+    appendAiMessage('bot', reply);
+  } catch (_) {
+    appendAiMessage('bot', localSummary);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+/* ============================================================================
+   8. INISIALISASI APLIKASI
+   ============================================================================ */
+async function saveState() {
+  if (window.notebookAppApi && typeof window.notebookAppApi.setAppState === 'function') {
+    await window.notebookAppApi.setAppState({
+      theme: appState.theme,
+      module: appState.module,
+      filters: appState.filters
+    });
+  }
+}
+
+async function initApp() {
+  if (window.notebookAppApi && typeof window.notebookAppApi.getAppState === 'function') {
+    const saved = await window.notebookAppApi.getAppState();
+    if (saved) {
+      if (saved.theme === 'light' || saved.theme === 'dark') appState.theme = saved.theme;
+      if (saved.module === 'deployment' || saved.module === 'planning') appState.module = saved.module;
+      if (saved.filters && typeof saved.filters === 'object') {
+        Object.keys(appState.filters).forEach(k => {
+          if (Array.isArray(saved.filters[k])) appState.filters[k] = saved.filters[k];
+        });
+      }
+    }
+  }
+  applyTheme();
+  buildChecklistSidebar();
+  updateFilterBadges();
+  switchModule(appState.module);
+  if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+  if (window.notebookAppApi && typeof window.notebookAppApi.notifyAppReady === 'function') {
+    window.notebookAppApi.notifyAppReady();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initApp);
+</script>
+</body>
+</html>
